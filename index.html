@@ -65,6 +65,9 @@
   .term .bar { display: flex; gap: 7px; padding: 12px 14px; }
   .term .bar i { width: 11px; height: 11px; border-radius: 50%; display: block; }
   .term pre { margin: 0; padding: 4px 18px 18px; white-space: pre-wrap; word-break: break-word; min-height: 150px; font: inherit; }
+  .stage .term pre { height: 250px; overflow: hidden; }
+  .old { opacity: .45; }
+  .placeholder { margin-top: 18px; border: 1px dashed var(--line); border-radius: 10px; padding: 18px; color: var(--faint); text-align: center; font-size: 15px; }
   .p { color: #3fb950; } .dim { color: #8b949e; } .hl { color: var(--butter); } .ok { color: #7ee2a8; } .crab { color: var(--mint); }
   .note { margin-top: 14px; font-size: 15px; color: var(--muted); min-height: 24px; }
   .steps { display: flex; justify-content: space-between; position: relative; margin: 26px 6px 0; }
@@ -106,7 +109,7 @@
   <nav>
     <a class="brand" href="#"><img src="assets/crab.svg" alt="">BACKUPPER</a>
     <div class="navlinks">
-      <a href="#idea">Idea</a><a href="#try">Try it</a>
+      <a href="#regretbench">RegretBench</a><a href="#backupper">BackUpper</a><a href="#try">Try it</a>
       <a href="#" title="TODO: paper link">Paper</a><a href="#" title="TODO: code link">Code</a>
     </div>
   </nav>
@@ -141,22 +144,35 @@
   </figure>
 
   <section>
-    <h2 class="center">Abstract</h2>
+    <details><summary><h2 style="display:inline">Abstract</h2></summary>
     <div class="abstract">
       <p>Coding agents now complete tasks autonomously, modifying real-world state such as artifacts, software environments, and configurations along the way. Yet they show limited <i>backup awareness</i>: recognizing that an action will modify state that may later be needed, and preserving it beforehand. To evaluate backup awareness, we introduce <b>RegretBench</b>: 205 executable tasks grounded in <i>regret moments</i> reported on platforms such as X.com, GitHub, and Stack Overflow, where users regretted not preserving state they later needed. Across six frontier models, agents complete 86.1% of tasks on average yet back up before these moments in only 15.2%, showing that task completion does not imply backup awareness.</p>
       <p>Because it is hard to predict which changes will be regretted, we propose <b>BackUpper</b>, a harness plug-in backup layer that checks every tool call and preserves affected state before modification. It combines rule-based strategies for common destructive operations with a lightweight subagent for complex cases. BackUpper's restored state reaches 92.2% average similarity to the original, and every regret-moment action is covered. Achieving this costs only $0.014 per task, with 7× fewer tokens than main-agent self-backup. When users state backup preferences, BackUpper narrows the backup scope and achieves 84.5% F1. It can also add new rule-based strategies through self-improvement to reduce subagent calls over time. These results show that agents can keep actions reversible at low cost while respecting users' preferences.</p>
-    </div>
+    </div></details>
   </section>
 
-  <section id="idea">
-    <h2>The idea: back up before every tool call</h2>
-    <p>BackUpper sits on the harness's pre-tool-call hook. It <b>intercepts</b> each call, <b>backs up</b> the state the call will change (with a built-in rule for common operations, or a lightweight subagent for complex ones), then lets the call <b>run</b>. When you regret it, you <b>restore</b>.</p>
-    <div class="stage">
-      <div class="term"><div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><pre id="screen"></pre></div>
-      <div class="note" id="note"></div>
-      <div class="steps" id="steps"></div>
-      <button class="replay" id="replay">↻ Replay</button>
+  <section id="regretbench">
+    <h2>RegretBench: do agents back up before you regret?</h2>
+    <p>Each task is built from a real <b>regret moment</b>: someone let an action change state they later needed, and could not get it back. The agent finishes the task; the question is whether it kept a way back.</p>
+    <div class="stage" data-stepper="regret">
+      <div class="term"><div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><pre></pre></div>
+      <div class="note"></div>
+      <div class="steps"></div>
+      <button class="replay">↻ Replay</button>
     </div>
+    <div class="placeholder">Results: coming next</div>
+  </section>
+
+  <section id="backupper">
+    <h2>BackUpper: back up before every tool call</h2>
+    <p>BackUpper sits on the harness's pre-tool-call hook. It <b>intercepts</b> each call, <b>backs up</b> the state the call will change, then lets the call <b>run</b>. When you regret it, you <b>restore</b>.</p>
+    <div class="stage" data-stepper="backup">
+      <div class="term"><div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><pre></pre></div>
+      <div class="note"></div>
+      <div class="steps"></div>
+      <button class="replay">↻ Replay</button>
+    </div>
+    <div class="placeholder">Results: coming next</div>
   </section>
 
   <section id="try">
@@ -195,49 +211,58 @@
 </div>
 
 <script>
-// "The idea" stepper: one tool call, four steps.
-const STEPS = [
-  { name: 'Intercept',
-    lines: ['<span class="p">&gt;</span> upgrade numpy to the latest version',
-            '<span class="hl">⏺ Bash(pip install -U numpy)</span>   <span class="crab">🦀 ✋ hold on!</span>'],
-    note: 'The call is caught on the pre-tool-call hook, before it touches anything.' },
-  { name: 'Back up',
-    lines: ['<span class="hl">⏺ Bash(pip install -U numpy)</span>',
-            '<span class="crab">🦀 common operation → rule-based backup</span>',
-            '<span class="ok">  $ pip freeze &gt; reqs.txt    ✓ 27 package versions saved</span>'],
-    note: 'Common operations use built-in rules; complex ones (like ./run.sh) go to a lightweight subagent.' },
-  { name: 'Run',
-    lines: ['<span class="hl">⏺ Bash(pip install -U numpy)</span>',
-            '<span class="dim">  ⎿ Successfully installed numpy-2.3 + 26 other packages</span>',
-            '<span class="dim">  … 100+ actions later …</span>'],
-    note: 'Only then does the call run, unchanged.' },
-  { name: 'Restore',
-    lines: ['<span class="p">&gt;</span> actually… I want my old dependencies back!',
-            '<span class="crab">🦀 BackUpper restore</span>',
-            '<span class="ok">  ✓ 27 packages restored</span>'],
-    note: 'The backup is still there, however long ago it was made.' },
-];
-const screen = document.getElementById('screen'), note = document.getElementById('note'), stepsEl = document.getElementById('steps');
-const fill = document.createElement('div'); fill.className = 'fill'; stepsEl.appendChild(fill);
-const btns = STEPS.map((s, i) => { const b = document.createElement('button'); b.className = 'step'; b.innerHTML = `<span></span>${s.name}`; b.onclick = () => show(i); stepsEl.appendChild(b); return b; });
-const HOLD = 3400, LINE = 380;
-let cur = 0, timer = null, typing = null;
-function render(i, animate) {
-  btns.forEach((b, k) => { b.classList.toggle('on', k <= i); b.classList.toggle('cur', k === i); });
-  const a = btns[0].offsetLeft + 9, z = btns[i].offsetLeft + btns[i].offsetWidth / 2;
-  fill.style.width = Math.max(0, z - a) + 'px';
-  note.textContent = STEPS[i].note;
-  const lines = STEPS[i].lines;
-  clearInterval(typing);
-  if (!animate) { screen.innerHTML = lines.join('\n'); return; }
-  let n = 0; screen.innerHTML = '';
-  typing = setInterval(() => { if (n >= lines.length) return clearInterval(typing); screen.innerHTML += (n ? '\n' : '') + lines[n++]; }, LINE);
+const P = t => `<span class="p">&gt;</span> ${t}`, CALL = t => `<span class="hl">⏺ ${t}</span>`, OUT = t => `<span class="dim">  ⎿ ${t}</span>`;
+const DATA = {
+  regret: [
+    { name: 'Upgrade', note: 'One call quietly changes the whole environment.',
+      lines: [P('upgrade numpy to the latest version'), CALL('Bash(pip install -U numpy)'),
+              OUT('Successfully installed numpy-2.3 <span style="color:#ff7b72">+ 26 other packages</span>'), '<span class="dim">⏺ Done! numpy upgraded ✓</span>'] },
+    { name: '100+ actions later', note: 'The session goes on; the old versions scroll out of sight.',
+      lines: ['<span class="dim">  ⋮   … 100+ more turns and actions …   ⋮</span>'] },
+    { name: 'Regret', note: 'Now the user needs the old state back.',
+      lines: [P('actually… I want my old dependencies back!')] },
+    { name: "Can't restore", note: 'Rewind only covers code, and the agent kept no record. This is a regret moment.',
+      lines: [P('/rewind'), '<span style="color:#ff7b72">  ✗ can\'t rewind the environment</span>', P('remember the old versions?'), '<span class="dim">⏺ Sorry, I don\'t.</span>'] },
+  ],
+  backup: [
+    { name: 'Intercept', note: 'The call is caught on the pre-tool-call hook, before it touches anything.',
+      lines: [P('upgrade numpy to the latest version'), CALL('Bash(pip install -U numpy)') + '   <span class="crab">🦀 ✋ hold on!</span>'] },
+    { name: 'Back up', note: 'Common operations use built-in rules; complex ones (like ./run.sh) go to a lightweight subagent.',
+      lines: ['<span class="crab">  🦀 common operation → rule-based backup</span>', '<span class="ok">  $ pip freeze &gt; reqs.txt   ✓ 27 package versions saved</span>'] },
+    { name: 'Run', note: 'Only then does the call run, unchanged.',
+      lines: [OUT('Successfully installed numpy-2.3 + 26 other packages'), '<span class="dim">  ⋮   … 100+ more turns and actions …   ⋮</span>'] },
+    { name: 'Restore', note: 'The backup is still there, however long ago it was made.',
+      lines: [P('actually… I want my old dependencies back!'), '<span class="crab">🦀 BackUpper restore</span>', '<span class="ok">  ✓ 27 packages restored</span>'] },
+  ],
+};
+// A stepper whose terminal is cumulative: step i shows everything from steps 0..i, and only step i's lines are new.
+function stepper(root, STEPS) {
+  const screen = root.querySelector('pre'), note = root.querySelector('.note'), stepsEl = root.querySelector('.steps');
+  const fill = document.createElement('div'); fill.className = 'fill'; stepsEl.appendChild(fill);
+  const btns = STEPS.map((s, i) => { const b = document.createElement('button'); b.className = 'step'; b.innerHTML = `<span></span>${s.name}`; b.onclick = () => show(i); stepsEl.appendChild(b); return b; });
+  const HOLD = 3200, LINE = 380;
+  let cur = 0, timer = null, typing = null;
+  const paint = (i, n) => {   // steps before i dimmed, step i's first n lines bright
+    const prev = STEPS.slice(0, i).flatMap(s => s.lines).map(l => `<span class="old">${l}</span>`);
+    screen.innerHTML = prev.concat(STEPS[i].lines.slice(0, n)).join('\n');
+    screen.scrollTop = screen.scrollHeight;
+  };
+  function render(i, animate) {
+    btns.forEach((b, k) => { b.classList.toggle('on', k <= i); b.classList.toggle('cur', k === i); });
+    fill.style.width = Math.max(0, btns[i].offsetLeft + btns[i].offsetWidth / 2 - btns[0].offsetLeft - 9) + 'px';
+    note.textContent = STEPS[i].note;
+    clearInterval(typing);
+    const L = STEPS[i].lines.length;
+    if (!animate) return paint(i, L);
+    let n = 0; paint(i, 0);
+    typing = setInterval(() => { n++; paint(i, n); if (n >= L) clearInterval(typing); }, LINE);
+  }
+  function schedule() { clearTimeout(timer); timer = setTimeout(() => show((cur + 1) % STEPS.length, true), HOLD + (cur === STEPS.length - 1 ? 1600 : 0)); }
+  function show(i, animate = false) { cur = i; render(i, animate); schedule(); }   // click: jump there, keep playing
+  root.querySelector('.replay').onclick = () => show(0, true);
+  show(0, true);
 }
-function schedule() { clearTimeout(timer); timer = setTimeout(() => show((cur + 1) % STEPS.length, true), HOLD + (cur === STEPS.length - 1 ? 1200 : 0)); }
-// clicking a node shows that step right away (no restart) and the loop carries on from there
-function show(i, animate = false) { cur = i; render(i, animate); schedule(); }
-document.getElementById('replay').onclick = () => show(0, true);
-show(0, true);
+document.querySelectorAll('[data-stepper]').forEach(el => stepper(el, DATA[el.dataset.stepper]));
 </script>
 </body>
 </html>
