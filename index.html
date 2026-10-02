@@ -89,10 +89,10 @@
   .canvas, .respane { overflow: hidden; }
   @media (min-width: 761px) {
     #rb-stage .canvas, #rb-stage .respane { height: 380px; }
-    #bu-stage .canvas, #bu-stage .respane { height: 440px; }
+    #bu-stage .canvas, #bu-stage .respane { height: 496px; }
   }
   #rb-stage .respane .chart { height: 300px; }
-  #bu-stage .respane .chart { height: 360px; }
+  #bu-stage .respane .chart { height: 400px; }
   .respane .lead { margin-bottom: 0; }
   .note { min-height: 52px; }
   .replay { display: block; margin: 14px 0 0 auto; background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 4px 14px; font: 13px "IBM Plex Mono", monospace; color: var(--muted); cursor: pointer; }
@@ -139,6 +139,9 @@
   .node.hit.sub { background: var(--lav-bg); }
   .node.hit .r { color: var(--accent); }
   .node.hit.sub .r { color: #6A4FC4; }
+  .node.idle { opacity: .35; }
+  .node.hit.prefnode { background: var(--butter-bg); }
+  .node.hit.prefnode .r { color: #9A6B00; }
   .group { font: 700 12px "IBM Plex Mono", monospace; letter-spacing: .1em; color: var(--faint); text-transform: uppercase; margin: 6px 0 -2px; }
   .log { margin-top: 18px; border-top: 1px dashed var(--line); padding-top: 12px; }
   .log h4 { margin: 0 0 6px; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
@@ -185,7 +188,7 @@
     .step { font-size: 10.5px; max-width: 70px; }
     .stage { padding: 14px; }
     #rb-stage .canvas, #rb-stage .respane { height: 704px; }
-    #bu-stage .canvas, #bu-stage .respane { height: 744px; }
+    #bu-stage .canvas, #bu-stage .respane { height: 856px; }
     .note { min-height: 104px; }
   }
 </style>
@@ -296,10 +299,11 @@
       <div class="canvas">
         <div class="flow">
           <div>
-            <div class="callcard"><div class="lbl">incoming tool call</div><div class="cmd" id="bu-cmd"></div></div>
+            <div class="callcard"><div class="lbl">incoming tool call</div><div class="cmd" id="bu-cmd"></div><div id="bu-pref" style="display:none;margin-top:8px;padding-top:8px;border-top:1px dashed #555;font:14px 'Source Sans 3',sans-serif;color:#FFD166"></div></div>
             <div class="outcome" id="bu-out"></div>
           </div>
           <div class="route" id="bu-route">
+            <div class="node prefnode" style="display:none"><span>🎯</span><span>Preference check <span class="k">personalized mode</span></span><span class="r"></span></div>
             <div class="node" data-n="0"><span>👀</span><span>Read-only allowlist</span><span class="r"></span></div>
             <div class="group">rules, no model call</div>
             <div class="node" data-n="1"><span>✏️</span><span><span class="k">Tier 1</span> Command rewriting</span><span class="r"></span></div>
@@ -495,7 +499,7 @@ function resultStep(root, on, chartId) {
 (() => {
   const root = document.getElementById('bu-stage');
   const cmd = document.getElementById('bu-cmd'), out = document.getElementById('bu-out'), log = document.getElementById('bu-log');
-  const nodes = [...root.querySelectorAll('.node')];
+  const nodes = [...root.querySelectorAll('.node[data-n]')], prefNode = root.querySelector('.prefnode'), pref = document.getElementById('bu-pref');
   const CALLS = [
     { name: 'Read-only', cmd: 'Bash(cat notes.txt)', hit: 0, cls: 'pass', r: 'pass ✓',
       out: 'Reads change nothing: <b>passed straight through</b>, no backup.' },
@@ -507,6 +511,8 @@ function resultStep(root, on, chartId) {
       out: 'A workspace edit: commits the files to a <b>shadow git repo</b> first.', log: 'shadow commit 3f2a…' },
     { name: 'Subagent', cmd: 'Bash(./run.sh)', hit: 5, cls: 'sub', r: 'subagent ✓', checker: 'not read-only',
       out: 'No rule fits. A <b>subagent</b> reads the script, then backs up <span class="mono">data/</span> + a db dump.', log: 'data/ + db.sql' },
+    { name: 'Customize', cmd: 'Bash(rm -rf build/)', pref: '🎯 your preference: “only back up what I wrote by hand”',
+      out: 'Build outputs aren\'t hand-written, so it <b>runs without a backup</b>: less storage, fewer subagent calls.' },
     { name: 'Restore', cmd: '“I want my old dependencies back!”', restore: true,
       out: '<b>BackUpper restore</b> → <span class="mono">pip install -r reqs.txt</span><br>✓ 27 packages back to their old versions' },
   ];
@@ -516,17 +522,22 @@ function resultStep(root, on, chartId) {
      '<b>Tier 2</b> pairs a command with the backup that undoes it.',
      '<b>Tier 3</b> snapshots edits inside the workspace.',
      'Anything else: an <b>LLM checker</b> spots that it changes state, and a <b>lightweight subagent</b> backs it up.',
+     'Say what you care about in plain words. In a personalized mode a <b>preference check</b> runs before every tier and only backs up calls that match (<b>84.5% F1</b>).',
      'Every backup is <b>logged with how to restore it</b>, however many actions ago.',
      'Restoring from BackUpper reaches <b>92.2%</b> state similarity to the original, with <b>every action covered</b>, outperforming others.'],
     (i, fresh) => {
       resultStep(root, i === CALLS.length, 'c-bu-main'); if (i === CALLS.length) return;
       const c = CALLS[i];
       cmd.textContent = c.cmd;
-      out.innerHTML = c.out; out.style.background = c.restore ? 'var(--mint-bg)' : (c.cls === 'sub' ? 'var(--lav-bg)' : c.cls === 'pass' ? '#F3EEE3' : 'var(--mint-bg)');
+      out.innerHTML = c.out; out.style.background = c.pref ? 'var(--butter-bg)' : c.restore ? 'var(--mint-bg)' : (c.cls === 'sub' ? 'var(--lav-bg)' : c.cls === 'pass' ? '#F3EEE3' : 'var(--mint-bg)');
+      pref.style.display = c.pref ? '' : 'none'; pref.textContent = c.pref || '';
+      prefNode.style.display = c.pref ? '' : 'none'; prefNode.className = 'node prefnode' + (c.pref ? ' hit' : '');
+      prefNode.querySelector('.r').textContent = c.pref ? 'no match → skip' : '';
       nodes.forEach((n, k) => {
         n.className = 'node' + (k === 5 ? ' sub' : '');
         n.querySelector('.r').textContent = '';
         if (c.restore) return;
+        if (c.pref) { n.classList.add('idle'); return; }
         if (k < c.hit) { if (k === 4) { n.classList.add('hit'); n.querySelector('.r').textContent = c.checker; } else n.classList.add('skip'); }
         if (k === c.hit) { n.classList.add('hit'); if (c.cls) n.classList.add(c.cls); n.querySelector('.r').textContent = c.r; }
       });
