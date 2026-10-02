@@ -8,115 +8,140 @@
 <link rel="icon" href="assets/crab.svg">
 <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;0,700;0,900;1,400&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
   :root {
     --ink: #2B2B2B; --muted: #6B6558; --faint: #9A9184; --line: #E7E1D4;
-    --accent: #2E8A62; --bg: #FBF8F1; --code-bg: #F3EEE3; --term: #1F1C19;
-    --mint: #6CC4A1; --butter: #FFD166; --coral: #E58A62;
+    --accent: #2E8A62; --cream: #FBF8F1; --code-bg: #F3EEE3; --term: #1F1C19;
+    --mint: #6CC4A1; --mint-bg: #E3F4EC; --butter: #FFD166; --butter-bg: #FFF4D6; --coral: #E58A62; --coral-bg: #FBE8DE;
+    --lav: #9C87E0; --lav-bg: #EEE8FC;
   }
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
-  body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.65 "Source Sans 3", system-ui, sans-serif; }
+  body { margin: 0; background: var(--cream); color: var(--ink); font: 17px/1.65 "Source Sans 3", system-ui, sans-serif; overflow-x: hidden; }
   a { color: var(--accent); text-decoration: none; }
   a:hover { text-decoration: underline; }
   code { font: 0.88em "IBM Plex Mono", monospace; background: var(--code-bg); padding: 1px 6px; border-radius: 4px; }
-  .wrap { max-width: 820px; margin: 0 auto; padding: 0 16px; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 16px; }
+
+  /* full-width bands, alternating cream / white */
+  .band { padding: 52px 0 56px; box-shadow: 0 0 0 100vmax var(--bandc); clip-path: inset(0 -100vmax); background: var(--bandc); }
+  .cream { --bandc: #FBF8F1; } .white { --bandc: #FFFFFF; }
+  .band + .band { border-top: 1px solid var(--line); }
 
   /* nav */
-  nav { display: flex; align-items: center; justify-content: space-between; padding: 18px 0; }
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 18px 0 0; }
   .brand { display: flex; align-items: center; gap: 8px; font-weight: 700; letter-spacing: .04em; color: var(--ink); }
   .brand:hover { text-decoration: none; }
   .brand img { width: 26px; height: 22px; }
   .navlinks { display: flex; gap: 18px; font-size: 15px; }
   .navlinks a { color: var(--muted); }
 
-  /* header */
-  header { text-align: center; padding: 26px 0 22px; border-bottom: 1px solid var(--line); }
-  .head { display: flex; align-items: center; justify-content: center; gap: 18px; }
-  .head img { width: 104px; flex: none; }
-  h1 { font-size: 32px; line-height: 1.2; margin: 0; max-width: 17em; text-align: left; }
-  .chips { margin-top: 10px; font-size: 14px; color: var(--muted); }
-  .chips span { display: inline-block; border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 1px 10px; margin: 0 2px; color: var(--ink); }
-  .tagline { color: var(--accent); font-weight: 600; font-size: 20px; margin: 18px 0 20px; }
+  /* hero */
+  .hero { text-align: center; padding-top: 30px; }
+  .hero .logo { width: 92px; }
+  h1 { font-size: 50px; line-height: 1.1; margin: 6px 0 8px; letter-spacing: -.02em; font-weight: 900; }
+  .subtitle { font-size: 23px; line-height: 1.3; color: var(--muted); font-weight: 600; margin: 0 auto 18px; max-width: 30em; }
   .authors { font-size: 16.5px; color: var(--accent); }
   .aff { color: var(--muted); font-size: 14.5px; margin-top: 6px; }
-  .btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 26px 0 8px; }
+  .btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 22px 0 8px; }
   .btn { display: inline-flex; align-items: center; gap: 7px; background: var(--ink); color: #fff; padding: 9px 18px; border-radius: 999px; font-weight: 600; font-size: 15.5px; }
   .btn:hover { text-decoration: none; opacity: .88; }
   .btn svg { width: 16px; height: 16px; }
-
-  .tldr { margin: 30px 0 0; background: #fff; border: 1px solid var(--line); border-left: 5px solid var(--mint); border-radius: 10px; padding: 18px 22px; }
-  .tldr h3 { margin: 0 0 8px; font-size: 15px; letter-spacing: .08em; color: var(--accent); }
-  .tldr p { margin: 0 0 8px; } .tldr p:last-child { margin: 0; }
-  /* figure */
-  figure { margin: 30px 0 52px; }
-  figure video { width: 100%; display: block; border: 1px solid var(--line); border-radius: 6px; background: #F3EEE3; }
+  .chips { margin-top: 10px; font-size: 14px; color: var(--muted); }
+  .chips span { display: inline-block; border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 1px 10px; margin: 0 2px; color: var(--ink); }
+  figure { margin: 30px 0 0; }
+  figure video { width: 100%; display: block; border: 1px solid var(--line); border-radius: 8px; background: #F3EEE3; }
   figcaption { color: var(--muted); font-size: 14px; line-height: 1.5; margin-top: 10px; }
   figcaption b { color: var(--ink); }
 
-  section { margin-top: 54px; }
-  /* full-width alternating bands (background bleeds past the column) */
-  body { overflow-x: hidden; }
-  section.band { margin-top: 0; padding: 52px 0 56px; box-shadow: 0 0 0 100vmax var(--bandc); clip-path: inset(0 -100vmax); background: var(--bandc); }
-  section.band + section.band { border-top: 1px solid var(--line); }
-  .b-white  { --bandc: #FFFFFF; }
-  .b-cream  { --bandc: #FBF8F1; }
-  .eyebrow { display: inline-block; font: 700 13px "IBM Plex Mono", monospace; letter-spacing: .12em; text-transform: uppercase; padding: 2px 10px; border-radius: 999px; margin-bottom: 10px; }
-  .b-regret .eyebrow { background: #F6D3C2; color: #A2482A; }
-  .b-backup .eyebrow { background: #C9EBD9; color: #1F6B4A; }
-  .b-regret h2 .acc2 { color: #C2552F; }
-  .b-backup h2 .acc2 { color: var(--accent); }
-  h2 { font-size: 27px; margin: 0 0 14px; line-height: 1.25; }
-  h2.center { text-align: center; }
-  .abstract { max-width: 700px; margin: 0 auto; line-height: 1.8; }
+  h2 { font-size: 28px; margin: 0 0 12px; line-height: 1.25; }
+  h2 .acc { color: var(--accent); }
+  .eyebrow { display: inline-block; font: 700 13px "IBM Plex Mono", monospace; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
 
-  /* idea stepper */
-  .stage { margin-top: 26px; border: 1px solid var(--line); border-radius: 14px; padding: 22px; background: #fff; box-shadow: 0 1px 0 var(--line); }
-  .term { background: var(--term); border-radius: 10px; color: #e6edf3; font: 15px/1.7 "IBM Plex Mono", monospace; overflow: hidden; }
-  .term .bar { display: flex; gap: 7px; padding: 12px 14px; }
-  .term .bar i { width: 11px; height: 11px; border-radius: 50%; display: block; }
-  .term pre { margin: 0; padding: 4px 18px 18px; white-space: pre-wrap; word-break: break-word; min-height: 150px; font: inherit; }
-  .stage .term pre { height: 250px; overflow: hidden; }
-  .old { opacity: .45; }
-  .placeholder { margin-top: 18px; border: 1px dashed var(--line); border-radius: 10px; padding: 18px; color: var(--faint); text-align: center; font-size: 15px; }
-  .p { color: #3fb950; } .dim { color: #8b949e; } .hl { color: var(--butter); } .ok { color: #7ee2a8; } .crab { color: var(--mint); }
-  .note { margin-top: 14px; font-size: 15px; color: var(--muted); min-height: 24px; }
-  .steps { display: flex; justify-content: space-between; position: relative; margin: 26px 6px 0; }
+  /* TL;DR */
+  .tldr { display: grid; gap: 12px; }
+  .tldr div { display: grid; grid-template-columns: 34px 1fr; gap: 12px; align-items: start; }
+  .tldr i { font-style: normal; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-size: 18px; }
+  .tldr p { margin: 4px 0 0; }
+
+  /* stage + steps (shared by both demos) */
+  .stage { margin-top: 22px; border: 1px solid var(--line); border-radius: 14px; padding: 22px; background: #fff; }
+  .cream .stage { background: #fff; } .white .stage { background: var(--cream); }
+  .canvas { min-height: 330px; }
+  .note { margin-top: 14px; font-size: 15.5px; color: var(--ink); min-height: 26px; }
+  .note b { color: var(--accent); }
+  .steps { display: flex; justify-content: space-between; position: relative; margin: 22px 6px 0; }
   .steps::before { content: ""; position: absolute; left: 8px; right: 8px; top: 8px; height: 2px; background: var(--line); }
   .steps .fill { position: absolute; left: 8px; top: 8px; height: 2px; background: var(--accent); width: 0; transition: width .4s; }
-  .step { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: 0; cursor: pointer; font: 13.5px "IBM Plex Mono", monospace; color: var(--muted); padding: 0; }
+  .step { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: 0; cursor: pointer; font: 13.5px "IBM Plex Mono", monospace; color: var(--muted); padding: 0; max-width: 110px; text-align: center; line-height: 1.25; }
   .step span { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #CFC6B4; background: #fff; transition: background .2s, border-color .2s; }
   .step.on { color: var(--ink); }
   .step.on span { border-color: var(--accent); background: var(--accent); }
   .step.cur span { box-shadow: 0 0 0 5px rgba(108,196,161,.35); }
   .step.cur { font-weight: 600; }
-  .replay { display: block; margin: 16px 0 0 auto; background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 4px 14px; font: 13px "IBM Plex Mono", monospace; color: var(--muted); cursor: pointer; }
+  .replay { display: block; margin: 14px 0 0 auto; background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 4px 14px; font: 13px "IBM Plex Mono", monospace; color: var(--muted); cursor: pointer; }
+  .pop { animation: pop .45s cubic-bezier(.3,1.6,.5,1) both; }
+  @keyframes pop { from { opacity: 0; transform: translateY(10px) scale(.94); } to { opacity: 1; transform: none; } }
 
-  /* step callouts + key line */
-  .stage .term { position: relative; }
-  .callout { position: absolute; top: 12px; right: 14px; padding: 4px 14px; border-radius: 999px; font: 700 15px "Source Sans 3", sans-serif; color: #1F1C19; opacity: 0; transform: scale(.6); transition: opacity .25s, transform .3s cubic-bezier(.3,1.6,.5,1); }
-  .callout.show { opacity: 1; transform: scale(1); }
-  .stamp { position: absolute; left: 50%; top: 52%; transform: translate(-50%,-50%) rotate(-6deg) scale(2.2); opacity: 0; pointer-events: none;
-           font: 900 52px "Source Sans 3", sans-serif; letter-spacing: .04em; padding: 2px 22px; border: 6px solid; border-radius: 14px; background: rgba(31,28,25,.82); transition: transform .35s cubic-bezier(.3,1.5,.5,1), opacity .2s; white-space: nowrap; }
-  .stamp.show { opacity: 1; transform: translate(-50%,-50%) rotate(-6deg) scale(1); }
-  .stamp small { display: block; font: 600 17px "Source Sans 3", sans-serif; letter-spacing: 0; text-align: center; margin: -4px 0 6px; }
-  .key { background: rgba(255,209,102,.16); border-radius: 4px; box-shadow: -6px 0 0 rgba(255,209,102,.16), 6px 0 0 rgba(255,209,102,.16); }
-  .key.good { background: rgba(108,196,161,.18); box-shadow: -6px 0 0 rgba(108,196,161,.18), 6px 0 0 rgba(108,196,161,.18); }
-  .key.bad { background: rgba(255,123,114,.18); box-shadow: -6px 0 0 rgba(255,123,114,.18), 6px 0 0 rgba(255,123,114,.18); }
+  /* RegretBench construction demo */
+  .pipe { display: grid; grid-template-columns: 1fr 26px 1fr 26px 1fr; align-items: stretch; gap: 0; }
+  .arrow { display: grid; place-items: center; color: var(--faint); font-size: 22px; }
+  .col { display: flex; flex-direction: column; gap: 10px; }
+  .card { border: 2px solid var(--ink); border-radius: 12px; background: #fff; padding: 10px 12px; font-size: 14.5px; line-height: 1.4; box-shadow: 4px 4px 0 var(--ink); }
+  .card h4 { margin: 0 0 6px; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
+  .card .mono { font: 13px/1.5 "IBM Plex Mono", monospace; }
+  .card.quote { background: var(--coral-bg); }
+  .card.env { background: #1F1C19; color: #EDE6D6; }
+  .card.env h4 { color: #BFB6A6; }
+  .card.task { background: var(--butter-bg); }
+  .tag { display: inline-block; font: 600 12px "IBM Plex Mono", monospace; border-radius: 6px; padding: 1px 7px; margin: 2px 4px 2px 0; border: 1.5px solid var(--ink); background: #fff; }
+  .tag.red { background: #FFD9D2; } .tag.ok { background: var(--mint-bg); }
+  .extract { display: grid; gap: 6px; }
+  .extract div { display: grid; grid-template-columns: 70px 1fr; gap: 8px; align-items: baseline; }
+  .extract b { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .verdict { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+  .verdict div { border-radius: 12px; padding: 10px 12px; border: 2px solid var(--ink); text-align: center; font-weight: 700; }
+  .verdict small { display: block; font-weight: 400; color: var(--muted); }
+  .hidden { visibility: hidden; }
+
+  /* BackUpper flow demo */
+  .flow { display: grid; grid-template-columns: 250px 1fr; gap: 22px; align-items: start; }
+  .callcard { border: 2px solid var(--ink); border-radius: 12px; background: var(--term); color: #EDE6D6; padding: 12px 14px; font: 14px/1.5 "IBM Plex Mono", monospace; box-shadow: 4px 4px 0 var(--ink); }
+  .callcard .lbl { font: 700 12px "Source Sans 3", sans-serif; letter-spacing: .08em; color: #BFB6A6; text-transform: uppercase; }
+  .callcard .cmd { color: var(--butter); font-weight: 600; word-break: break-word; }
+  .outcome { margin-top: 12px; border: 2px solid var(--ink); border-radius: 12px; padding: 10px 14px; font-size: 14.5px; line-height: 1.45; background: var(--mint-bg); min-height: 86px; }
+  .outcome .mono { font: 13.5px "IBM Plex Mono", monospace; }
+  .route { display: grid; gap: 7px; }
+  .node { display: grid; grid-template-columns: 26px 1fr auto; align-items: center; gap: 10px; border: 2px solid var(--line); border-radius: 10px; padding: 7px 12px; background: #fff; transition: all .25s; font-size: 15px; }
+  .node > span:nth-child(2) { justify-self: start; text-align: left; }
+  .node .k { font: 700 12.5px "IBM Plex Mono", monospace; color: var(--muted); }
+  .node .r { font: 600 13px "IBM Plex Mono", monospace; color: var(--faint); }
+  .node.skip { opacity: .55; }
+  .node.skip .r::after { content: "no match"; }
+  .node.hit { border-color: var(--ink); box-shadow: 3px 3px 0 var(--ink); background: var(--mint-bg); opacity: 1; }
+  .node.hit.pass { background: #F3EEE3; }
+  .node.hit.sub { background: var(--lav-bg); }
+  .node.hit .r { color: var(--accent); }
+  .node.hit.sub .r { color: #6A4FC4; }
+  .group { font: 700 12px "IBM Plex Mono", monospace; letter-spacing: .1em; color: var(--faint); text-transform: uppercase; margin: 6px 0 -2px; }
+  .log { margin-top: 18px; border-top: 1px dashed var(--line); padding-top: 12px; }
+  .log h4 { margin: 0 0 6px; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .log ul { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
+  .log li { font: 13px "IBM Plex Mono", monospace; border: 1.5px solid var(--ink); border-radius: 8px; padding: 2px 9px; background: #fff; }
 
   /* results */
-  .result { margin-top: 26px; }
-  .result h3 { font-size: 20px; margin: 0 0 6px; }
-  .result .lead { margin: 0 0 6px; }
-  .chart { width: 100%; height: 360px; }
+  .result { margin-top: 30px; }
+  .result h3 { font-size: 21px; margin: 0 0 6px; }
+  .lead { margin: 0 0 6px; }
+  .chart { width: 100%; height: 380px; }
   .chart.sm { height: 300px; }
   .cap { color: var(--muted); font-size: 14px; text-align: center; margin: 2px 0 0; }
-  .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 16px 0 4px; }
+  .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 18px 0 4px; }
   .cards div { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; text-align: center; }
-  .cards b { display: block; font-size: 24px; color: var(--accent); line-height: 1.2; }
+  .cards b { display: block; font-size: 25px; color: var(--accent); line-height: 1.2; }
   .cards span { font-size: 13.5px; color: var(--muted); }
-  details.more { margin-top: 14px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+  details.more { margin-top: 16px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
   details.more > summary { cursor: pointer; padding: 12px 16px; font-weight: 600; color: var(--accent); list-style: none; }
   details.more > summary::before { content: "▸ "; } details.more[open] > summary::before { content: "▾ "; }
   details.more > div { padding: 0 16px 16px; }
@@ -124,86 +149,114 @@
   .sub { font-weight: 700; font-size: 15.5px; margin: 14px 0 0; text-align: center; }
 
   /* try it */
+  .term { background: var(--term); border-radius: 10px; color: #e6edf3; font: 14px/1.7 "IBM Plex Mono", monospace; overflow: hidden; }
+  .term .bar { display: flex; gap: 7px; padding: 12px 14px; }
+  .term .bar i { width: 11px; height: 11px; border-radius: 50%; display: block; }
+  .term pre { margin: 0; padding: 4px 18px 18px; white-space: pre-wrap; word-break: break-word; font: inherit; }
+  .p { color: #3fb950; } .dim { color: #8b949e; }
   .try { display: grid; grid-template-columns: 1fr 1.1fr; gap: 26px; align-items: start; }
   .try p { margin: 0 0 14px; }
-  .small { font-size: 14.5px; color: var(--muted); }
-  .try .term pre { min-height: 0; font-size: 14px; }
-  h2 .acc { color: var(--accent); }
-
   pre.bib { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 16px 18px; font: 13.5px/1.7 "IBM Plex Mono", monospace; overflow-x: auto; margin: 0; }
-  footer { margin: 0 0 40px; padding-top: 22px; border-top: 1px solid var(--line); text-align: center; color: var(--faint); font-size: 14px; }
+  footer { padding: 26px 0 40px; text-align: center; color: var(--faint); font-size: 14px; }
 
-  @media (max-width: 720px) {
+  @media (max-width: 760px) {
     body { font-size: 16px; }
-    h1 { font-size: 26px; text-align: center; }
-    .head { flex-direction: column; gap: 8px; }
-    .head img { width: 84px; }
-    .navlinks { gap: 10px; font-size: 13.5px; }
-    .navlinks a[title] { display: none; }
-    .try { grid-template-columns: 1fr; }
-    .step { font-size: 11px; }
-    .stage { padding: 14px; }
+    h1 { font-size: 34px; } .subtitle { font-size: 18px; }
+    .navlinks { gap: 10px; font-size: 13.5px; } .navlinks a[title] { display: none; }
+    .pipe { grid-template-columns: 1fr; } .arrow { transform: rotate(90deg); height: 24px; }
+    .flow { grid-template-columns: 1fr; }
+    .try, .two { grid-template-columns: 1fr; }
     .cards { grid-template-columns: repeat(2, 1fr); }
-    .two { grid-template-columns: 1fr; }
-    .stamp { font-size: 32px; }
-    .term { font-size: 13px; }
+    .step { font-size: 10.5px; max-width: 70px; }
+    .stage { padding: 14px; }
   }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <nav>
-    <a class="brand" href="#"><img src="assets/crab.svg" alt="">BACKUPPER</a>
-    <div class="navlinks">
-      <a href="#regretbench">RegretBench</a><a href="#backupper">BackUpper</a><a href="#try">Try it</a>
-      <a href="#" title="TODO: paper link">Paper</a><a href="#" title="TODO: code link">Code</a>
+
+  <!-- 1. title + video -->
+  <section class="band cream" style="padding-top:0">
+    <nav>
+      <a class="brand" href="#"><img src="assets/crab.svg" alt="">BACKUPPER</a>
+      <div class="navlinks">
+        <a href="#tldr">TL;DR</a><a href="#regretbench">RegretBench</a><a href="#backupper">BackUpper</a><a href="#try">Try it</a>
+        <a href="#" title="TODO: paper link">Paper</a><a href="#" title="TODO: code link">Code</a>
+      </div>
+    </nav>
+    <div class="hero">
+      <img class="logo" src="assets/crab.svg" alt="BackUpper mascot">
+      <h1>Back Up Before You Regret</h1>
+      <div class="subtitle">Measuring Backup Awareness and Automating Backup in Coding Agents</div>
+      <div class="authors">Xu Li<sup>1</sup>, Simon Yu<sup>1</sup>, Minzhou Pan<sup>1</sup>, Yiyou Sun<sup>2</sup>, Zhaorun Chen<sup>3</sup>, Bo Li<sup>4</sup>, Weiyan Shi<sup>1</sup></div>
+      <div class="aff"><sup>1</sup>Northeastern University &nbsp; <sup>2</sup>UC Berkeley &nbsp; <sup>3</sup>University of Chicago &nbsp; <sup>4</sup>UIUC</div>
+      <div class="btns">
+        <!-- TODO: paper / code links -->
+        <a class="btn" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h6"/></svg>Paper</a>
+        <a class="btn" href="#"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.3-3.4-1.3-.5-1.1-1.1-1.4-1.1-1.4-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.4 1.1 3 .8.1-.6.3-1.1.6-1.3-2.2-.3-4.6-1.1-4.6-5a3.9 3.9 0 0 1 1-2.7 3.6 3.6 0 0 1 .1-2.7s.8-.3 2.8 1a9.6 9.6 0 0 1 5 0c1.9-1.3 2.8-1 2.8-1 .5 1.4.2 2.4.1 2.7a3.9 3.9 0 0 1 1 2.7c0 3.9-2.3 4.7-4.6 5 .4.3.7.9.7 1.9v2.8c0 .3.2.6.7.5A10 10 0 0 0 12 2z"/></svg>GitHub</a>
+        <a class="btn" href="#bibtex"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 7H6a2 2 0 0 0-2 2v4h6V7zM20 7h-4a2 2 0 0 0-2 2v4h6V7zM4 13c0 3 1 4 3 5M14 13c0 3 1 4 3 5"/></svg>BibTeX</a>
+      </div>
+      <div class="chips">tested with <span>Claude Code</span><span>Codex</span><span>Hermes</span></div>
     </div>
-  </nav>
+    <figure>
+      <video src="assets/promo.mp4" poster="assets/poster.jpg" controls muted playsinline preload="metadata"></video>
+      <figcaption><b>Video.</b> One <code>pip install -U numpy</code> silently changes 27 packages; 100+ actions later the old environment is gone. With BackUpper, the same call is caught, the environment is backed up first, and it restores in one step.</figcaption>
+    </figure>
+  </section>
 
-  <header>
-    <div class="head"><img src="assets/crab.svg" alt="BackUpper mascot"><h1>Back Up Before You Regret: Measuring Backup Awareness and Automating Backup in Coding Agents</h1></div>
-    <div class="tagline">Agents finish the task, but rarely back up first.</div>
-    <div class="authors">
-      Xu Li<sup>1</sup>, Simon Yu<sup>1</sup>, Minzhou Pan<sup>1</sup>, Yiyou Sun<sup>2</sup>,
-      Zhaorun Chen<sup>3</sup>, Bo Li<sup>4</sup>, Weiyan Shi<sup>1</sup>
+  <!-- 2. TL;DR -->
+  <section id="tldr" class="band white">
+    <div class="eyebrow">TL;DR</div>
+    <div class="tldr">
+      <div><i style="background:var(--coral-bg)">⚠️</i><p><b>Coding agents modify real-world state</b>, such as software environments, databases, and files, and users often regret the loss later, when they find they still need it.</p></div>
+      <div><i style="background:var(--butter-bg)">📏</i><p><b>RegretBench</b> grounds 205 tasks in real-world regret moments and tests whether coding agents back up, how often, and whether it matches what humans later need.</p></div>
+      <div><i style="background:var(--mint-bg)">🦀</i><p><b>BackUpper</b> is a plug-in that backs up affected state before every tool call, covering every regret-moment action at $0.014 per task.</p></div>
     </div>
-    <div class="aff"><sup>1</sup>Northeastern University &nbsp; <sup>2</sup>UC Berkeley &nbsp; <sup>3</sup>University of Chicago &nbsp; <sup>4</sup>UIUC</div>
-    <div class="btns">
-      <!-- TODO: paper / code links -->
-      <a class="btn" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h6"/></svg>Paper</a>
-      <a class="btn" href="#"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.3-3.4-1.3-.5-1.1-1.1-1.4-1.1-1.4-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.4 1.1 3 .8.1-.6.3-1.1.6-1.3-2.2-.3-4.6-1.1-4.6-5a3.9 3.9 0 0 1 1-2.7 3.6 3.6 0 0 1 .1-2.7s.8-.3 2.8 1a9.6 9.6 0 0 1 5 0c1.9-1.3 2.8-1 2.8-1 .5 1.4.2 2.4.1 2.7a3.9 3.9 0 0 1 1 2.7c0 3.9-2.3 4.7-4.6 5 .4.3.7.9.7 1.9v2.8c0 .3.2.6.7.5A10 10 0 0 0 12 2z"/></svg>GitHub</a>
-      <a class="btn" href="#bibtex"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 7H6a2 2 0 0 0-2 2v4h6V7zM20 7h-4a2 2 0 0 0-2 2v4h6V7zM4 13c0 3 1 4 3 5M14 13c0 3 1 4 3 5"/></svg>BibTeX</a>
-    </div>
-    <div class="chips">tested with <span>Claude Code</span><span>Codex</span><span>Hermes</span></div>
-  </header>
+  </section>
 
-  <div class="tldr">
-    <h3>TL;DR</h3>
-    <p><b>Coding agents modify real-world state</b>, such as software environments, databases, and files, and users often regret the loss later, when they find they still need it.</p>
-    <p><b>RegretBench</b> grounds 205 tasks in real-world regret moments and tests whether coding agents back up, how often, and whether it matches what humans later need.</p>
-    <p><b>BackUpper</b> is a plug-in that backs up affected state before every tool call, covering every regret-moment action at $0.014 per task.</p>
-  </div>
-
-  <figure>
-    <video src="assets/promo.mp4" poster="assets/poster.jpg" controls muted playsinline preload="metadata"></video>
-    <figcaption><b>Figure 1.</b> One <code>pip install -U numpy</code> silently changes 27 packages; 100+ actions later the old environment is gone. With BackUpper, the same call is caught, the environment is backed up first, and it restores in one step.</figcaption>
-  </figure>
-
-  <section id="regretbench" class="band b-white b-regret">
-    <div class="eyebrow">01 · The problem</div>
-    <h2><span class="acc2">RegretBench</span>: do agents back up before you regret?</h2>
-    <p>Each task is built from a real <b>regret moment</b>: someone let an action change state they later needed, and could not get it back. The agent finishes the task; the question is whether it kept a way back.</p>
-    <div class="stage" data-stepper="regret">
-      <div class="term"><div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><pre></pre><div class="callout"></div><div class="stamp"></div></div>
+  <!-- 3. RegretBench -->
+  <section id="regretbench" class="band cream">
+    <div class="eyebrow">01 · Benchmark</div>
+    <h2><span class="acc">RegretBench</span>: built from real regret moments</h2>
+    <p>Each task starts from a real report of someone losing state they later needed. We extract what went wrong, rebuild it as an executable multi-turn task, and check whether the agent backs up before the step the user regretted.</p>
+    <div class="stage" id="rb-stage">
+      <div class="canvas">
+        <div class="pipe">
+          <div class="col" data-s="0">
+            <div class="card quote"><h4>① Real regret moment</h4>
+              “I ran <span class="mono">pip install --upgrade ipykernel</span> and it replaced traitlets 5.1.1. <b>That was the only copy.</b>”
+              <div style="margin-top:6px"><span class="tag">Stack Overflow</span><span class="tag">X.com</span><span class="tag">GitHub</span></div></div>
+          </div>
+          <div class="arrow" data-s="1">→</div>
+          <div class="col" data-s="1">
+            <div class="card"><h4>② What went wrong</h4>
+              <div class="extract">
+                <div><b>Action</b><span class="mono">pip install -U ipykernel</span></div>
+                <div><b>Lost</b><span><span class="tag red">traitlets 5.1.1</span> replaced in place</span></div>
+                <div><b>Need</b><span>get the old version back</span></div>
+              </div></div>
+          </div>
+          <div class="arrow" data-s="2">→</div>
+          <div class="col" data-s="2">
+            <div class="card env"><h4>③ Real environment</h4><div class="mono">/opt/conda/<br>  traitlets 5.1.1<br>  ipykernel 6.9.1</div></div>
+            <div class="card task"><h4>+ Real conversation</h4>5 turns, ~45 actions; the upgrade is one of them, the regret comes later.</div>
+          </div>
+        </div>
+        <div class="verdict" data-s="3">
+          <div style="background:var(--mint-bg)">✓ Task done<small>task judge → pass rate</small></div>
+          <div style="background:#FFD9D2">✗ No backup before the upgrade<small>backup judge → RMBR · OWBR</small></div>
+        </div>
+      </div>
       <div class="note"></div>
       <div class="steps"></div>
       <button class="replay">↻ Replay</button>
     </div>
+
     <div class="result">
-      <h3>Main result: agents finish the task, but rarely back up first</h3>
-      <p class="lead">Across six frontier models, agents finish <b>86.1%</b> of tasks, back up only <b>17.4%</b> of the out-of-workspace state they change, and just <b>15.2%</b> of the steps users later regretted. Five of six back up more often overall than at the regret moment, so even their backups tend to miss what users needed.</p>
+      <h3>Agents finish the task, but rarely back up first</h3>
+      <p class="lead">Across six frontier models, agents finish <b>86.1%</b> of tasks, back up only <b>17.4%</b> of the out-of-workspace state they change, and just <b>15.2%</b> of the steps users later regretted.</p>
       <div class="chart" id="c-rb-main"></div>
-      <p class="cap">Task pass rate, out-of-workspace backup rate (OWBR) and regret-moment backup rate (RMBR) on all 205 tasks.</p>
+      <p class="cap">Pass rate, out-of-workspace backup rate (OWBR) and regret-moment backup rate (RMBR) on all 205 tasks.</p>
       <details class="more"><summary>More RegretBench results</summary><div>
         <div class="cards"><div><b>205</b><span>executable tasks</span></div><div><b>5</b><span>tools: shell, SQL, browser, email, DevOps</span></div><div><b>~45</b><span>actions per task</span></div><div><b>3</b><span>real-world source categories</span></div></div>
         <div class="two">
@@ -215,27 +268,47 @@
     </div>
   </section>
 
-  <section id="backupper" class="band b-cream b-backup">
-    <div class="eyebrow">02 · The fix</div>
-    <h2><span class="acc2">BackUpper</span>: back up before every tool call</h2>
-    <p>BackUpper sits on the harness's pre-tool-call hook. It <b>intercepts</b> each call, <b>backs up</b> the state the call will change, then lets the call <b>run</b>. When you regret it, you <b>restore</b>.</p>
-    <div class="stage" data-stepper="backup">
-      <div class="term"><div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><pre></pre><div class="callout"></div><div class="stamp"></div></div>
+  <!-- 4. BackUpper -->
+  <section id="backupper" class="band white">
+    <div class="eyebrow">02 · Method</div>
+    <h2><span class="acc">BackUpper</span>: check every tool call before it runs</h2>
+    <p>BackUpper sits on the harness's pre-tool-call hook. Each call is routed through a few cheap checks; the first that matches backs up the state the call will change, then the call runs. Everything is logged so you can restore later.</p>
+    <div class="stage" id="bu-stage">
+      <div class="canvas">
+        <div class="flow">
+          <div>
+            <div class="callcard"><div class="lbl">incoming tool call</div><div class="cmd" id="bu-cmd"></div></div>
+            <div class="outcome" id="bu-out"></div>
+          </div>
+          <div class="route" id="bu-route">
+            <div class="node" data-n="0"><span>👀</span><span>Read-only allowlist</span><span class="r"></span></div>
+            <div class="group">rules, no model call</div>
+            <div class="node" data-n="1"><span>✏️</span><span><span class="k">Tier 1</span> Command rewriting</span><span class="r"></span></div>
+            <div class="node" data-n="2"><span>🔗</span><span><span class="k">Tier 2</span> Command pairing</span><span class="r"></span></div>
+            <div class="node" data-n="3"><span>📸</span><span><span class="k">Tier 3</span> Snapshot</span><span class="r"></span></div>
+            <div class="group">everything else</div>
+            <div class="node" data-n="4"><span>🔍</span><span>LLM checker: read-only?</span><span class="r"></span></div>
+            <div class="node sub" data-n="5"><span>🦀</span><span><span class="k">Tier 4</span> Backup subagent</span><span class="r"></span></div>
+          </div>
+        </div>
+        <div class="log"><h4>🔒 backup log</h4><ul id="bu-log"></ul></div>
+      </div>
       <div class="note"></div>
       <div class="steps"></div>
       <button class="replay">↻ Replay</button>
     </div>
+
     <div class="result">
-      <h3>Main result: every regret moment covered, on every model</h3>
-      <p class="lead">With BackUpper, RMBR and OWBR reach <b>100%</b> on all six models, and the restored state is <b>92.2%</b> similar to the original on average (14.3% without restoring).</p>
+      <h3>The only method that covers every regret moment, and restores the most</h3>
+      <p class="lead">BackUpper reaches <b>100%</b> RMBR and OWBR and the highest restored-state similarity (<b>92.2%</b>). The strongest baseline, a detailed backup skill for the main agent, reaches 81.4% RMBR but only 71.1% similarity; recovering after the fact restores 47.4%.</p>
       <div class="chart" id="c-bu-main"></div>
-      <p class="cap">Regret-moment backup rate without and with BackUpper, 205 tasks.</p>
+      <p class="cap">205 tasks, averaged over six models. Post-hoc Recovery does not back up before actions, so it is evaluated only by state similarity.</p>
       <div class="cards"><div><b>92.2%</b><span>restored-state similarity</span></div><div><b>$0.014</b><span>per task*</span></div><div><b>7×</b><span>fewer tokens*</span></div><div><b>84.5%</b><span>F1 on user preferences</span></div></div>
       <p class="cap">* vs. the main agent backing up by itself, with prompt caching.</p>
       <details class="more"><summary>More BackUpper results</summary><div>
-        <p class="sub">Against other backup approaches</p><div class="chart" id="c-bu-base"></div><p class="cap">205 tasks, averaged over six models.</p>
+        <p class="sub">Every model reaches 100%</p><div class="chart sm" id="c-bu-models"></div><p class="cap">RMBR without and with BackUpper.</p>
         <div class="two">
-          <div><p class="sub">Restored state, by tool</p><div class="chart sm" id="c-bu-restore"></div><p class="cap">Similarity to the original state; 14.3% without restoring.</p></div>
+          <div><p class="sub">Restored state, by tool</p><div class="chart sm" id="c-bu-restore"></div><p class="cap">Similarity to the original state, without and with restoring.</p></div>
           <div><p class="sub">Backs up only what you care about</p><div class="chart sm" id="c-bu-pref"></div><p class="cap">Backup-trigger F1 under three personalized modes.</p></div>
         </div>
         <div class="two">
@@ -246,14 +319,14 @@
     </div>
   </section>
 
-  <section id="try" class="band b-white">
-    <div class="eyebrow" style="background:#EEE8DC;color:#6B6558">03 · Try it</div>
+  <!-- 5. Try it -->
+  <section id="try" class="band cream">
+    <div class="eyebrow">03 · Try it</div>
     <h2>Try it yourself: <span class="acc">plug it into your agent</span></h2>
     <div class="try">
       <div>
         <p>Install BackUpper once and keep using your agent as usual. Every tool call is checked before it runs, and the state it touches is backed up first.</p>
         <p>Common operations are handled by rules at no model cost; anything else goes to a lightweight subagent. Every backup is logged with a way to restore it.</p>
-        <p class="small">Tested with Claude Code, Codex, and Hermes.</p>
       </div>
       <!-- TODO: confirm the real commands -->
       <div class="term"><div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><pre><span class="p">$</span> npm install -g agents-backupper
@@ -267,7 +340,8 @@
     </div>
   </section>
 
-  <section id="bibtex" class="band b-cream">
+  <!-- 6. BibTeX -->
+  <section id="bibtex" class="band white">
     <h2>BibTeX</h2>
 <pre class="bib">@article{li2026backup,
   title   = {Back Up Before You Regret: Measuring Backup Awareness
@@ -283,112 +357,131 @@
 </div>
 
 <script>
-const P = t => `<span class="p">&gt;</span> ${t}`, CALL = t => `<span class="hl">⏺ ${t}</span>`, OUT = t => `<span class="dim">  ⎿ ${t}</span>`;
-const RED = '#ff7b72', BUTTER = '#FFD166', MINT = '#6CC4A1', CORAL = '#E58A62';
-// each step: lines (only the new ones), key = index of the line to highlight, callout = [text, colour], stamp = [title, subtitle, colour]
-const DATA = {
-  regret: [
-    { name: 'Upgrade', note: 'One call quietly changes the whole environment.', key: [2, 'bad'], callout: ['⚠ 27 packages changed', CORAL],
-      lines: [P('upgrade numpy to the latest version'), CALL('Bash(pip install -U numpy)'),
-              OUT(`Successfully installed numpy-2.3 <span style="color:${RED}">+ 26 other packages</span>`), '<span class="dim">⏺ Done! numpy upgraded ✓</span>'] },
-    { name: '100+ actions later', note: 'The session goes on; the old versions scroll out of sight.', callout: ['⏩ 100+ actions later', BUTTER],
-      lines: ['<span class="dim">  ⋮   … 100+ more turns and actions …   ⋮</span>'] },
-    { name: 'Regret', note: 'Now the user needs the old state back.', key: [0, ''], callout: ['😟 the user needs it back', BUTTER],
-      lines: [P('<b>actually… I want my old dependencies back!</b>')] },
-    { name: "Can't restore", note: 'Rewind only covers code, and the agent kept no record.', key: [1, 'bad'], stamp: ['REGRET MOMENT', 'the state you needed is gone for good', RED],
-      lines: [P('/rewind'), `<span style="color:${RED}">  ✗ can't rewind the environment</span>`, P('remember the old versions?'), '<span class="dim">⏺ Sorry, I don\'t.</span>'] },
-  ],
-  backup: [
-    { name: 'Intercept', note: 'The call is caught on the pre-tool-call hook, before it touches anything.', key: [1, ''], callout: ['✋ intercepted', BUTTER],
-      lines: [P('upgrade numpy to the latest version'), CALL('Bash(pip install -U numpy)') + '   <span class="crab">🦀 hold on!</span>'] },
-    { name: 'Back up', note: 'Common operations use built-in rules; complex ones (like ./run.sh) go to a lightweight subagent.', key: [1, 'good'], callout: ['📦 backed up: reqs.txt', MINT],
-      lines: ['<span class="crab">  🦀 common operation → rule-based backup</span>', '<span class="ok">  $ pip freeze &gt; reqs.txt   ✓ 27 package versions saved</span>'] },
-    { name: 'Run', note: 'Only then does the call run, unchanged.', callout: ['▶ runs as usual', '#C9D1D9'],
-      lines: [OUT('Successfully installed numpy-2.3 + 26 other packages'), '<span class="dim">  ⋮   … 100+ more turns and actions …   ⋮</span>'] },
-    { name: 'Restore', note: 'The backup is still there, however long ago it was made.', key: [2, 'good'], stamp: ['RESTORED', '27 packages back to their old versions', MINT],
-      lines: [P('actually… I want my old dependencies back!'), '<span class="crab">🦀 BackUpper restore</span>', '<span class="ok">  ✓ 27 packages restored</span>'] },
-  ],
-};
-// Stepper with a cumulative terminal: step i shows steps 0..i; earlier steps dim, step i's lines are new.
-function stepper(root, STEPS) {
-  const screen = root.querySelector('pre'), note = root.querySelector('.note'), stepsEl = root.querySelector('.steps');
-  const callout = root.querySelector('.callout'), stamp = root.querySelector('.stamp');
+// ---------- a small stepper: nodes, progress line, autoplay loop; clicking jumps without restarting ----------
+function stepper(root, names, notes, render, hold = 3400) {
+  const note = root.querySelector('.note'), stepsEl = root.querySelector('.steps');
   const fill = document.createElement('div'); fill.className = 'fill'; stepsEl.appendChild(fill);
-  const btns = STEPS.map((s, i) => { const b = document.createElement('button'); b.className = 'step'; b.innerHTML = `<span></span>${s.name}`; b.onclick = () => show(i); stepsEl.appendChild(b); return b; });
-  const HOLD = 3400, LINE = 380;
-  let cur = 0, timer = null, typing = null, fx = null;
-  const lineHTML = (s, j) => s.key && s.key[0] === j ? `<span class="key ${s.key[1]}">${s.lines[j]}</span>` : s.lines[j];
-  const paint = (i, n) => {
-    const prev = STEPS.slice(0, i).flatMap(s => s.lines).map(l => `<span class="old">${l}</span>`);
-    const now = STEPS[i].lines.slice(0, n).map((_, j) => lineHTML(STEPS[i], j));
-    screen.innerHTML = prev.concat(now).join('\n');
-    screen.scrollTop = screen.scrollHeight;
-  };
-  const effects = s => {
-    callout.classList.remove('show'); stamp.classList.remove('show');
-    if (s.callout) { callout.textContent = s.callout[0]; callout.style.background = s.callout[1]; callout.classList.add('show'); }
-    if (s.stamp) { stamp.innerHTML = `${s.stamp[0]}<small>${s.stamp[1]}</small>`; stamp.style.color = stamp.style.borderColor = s.stamp[2]; stamp.classList.add('show'); }
-  };
-  function render(i, animate) {
+  const btns = names.map((n, i) => { const b = document.createElement('button'); b.className = 'step'; b.innerHTML = `<span></span>${n}`; b.onclick = () => show(i); stepsEl.appendChild(b); return b; });
+  let cur = 0, timer = null;
+  function show(i, fresh = false) {
+    cur = i;
     btns.forEach((b, k) => { b.classList.toggle('on', k <= i); b.classList.toggle('cur', k === i); });
     fill.style.width = Math.max(0, btns[i].offsetLeft + btns[i].offsetWidth / 2 - btns[0].offsetLeft - 9) + 'px';
-    note.textContent = STEPS[i].note;
-    clearInterval(typing); clearTimeout(fx);
-    callout.classList.remove('show'); stamp.classList.remove('show');
-    const L = STEPS[i].lines.length;
-    if (!animate) { paint(i, L); effects(STEPS[i]); return; }
-    let n = 0; paint(i, 0);
-    typing = setInterval(() => { n++; paint(i, n); if (n >= L) { clearInterval(typing); fx = setTimeout(() => effects(STEPS[i]), 150); } }, LINE);
+    note.innerHTML = notes[i];
+    render(i, fresh);
+    clearTimeout(timer);
+    timer = setTimeout(() => show((cur + 1) % names.length, true), hold + (cur === names.length - 1 ? 1800 : 0));
   }
-  function schedule() { clearTimeout(timer); timer = setTimeout(() => show((cur + 1) % STEPS.length, true), HOLD + (cur === STEPS.length - 1 ? 2000 : 0)); }
-  function show(i, animate = false) { cur = i; render(i, animate); schedule(); }   // click: jump there, keep playing
   root.querySelector('.replay').onclick = () => show(0, true);
   show(0, true);
 }
-document.querySelectorAll('[data-stepper]').forEach(el => stepper(el, DATA[el.dataset.stepper]));
+
+// ---------- RegretBench: how a task is built (cumulative: each step adds a piece) ----------
+(() => {
+  const root = document.getElementById('rb-stage');
+  const parts = [...root.querySelectorAll('[data-s]')];
+  stepper(root,
+    ['Collect', 'Extract', 'Build', 'Evaluate'],
+    ['Start from a <b>real regret moment</b>: 205 of them, from X.com, GitHub, Stack Overflow and news reports.',
+     'Pull out the <b>action</b> that caused the loss, the <b>state</b> that was lost, and what the user <b>needed</b> back.',
+     'Rebuild it as an <b>executable multi-turn task</b> in a real environment, with the lost state placed outside the harness\'s own backups.',
+     'Run the agent. A task judge checks it <b>finished</b>; a backup judge checks it <b>backed up before the regret moment</b>.'],
+    (i, fresh) => parts.forEach(p => {
+      const s = +p.dataset.s, was = !p.classList.contains('hidden');
+      p.classList.toggle('hidden', s > i);
+      if (s === i && (fresh || !was)) { p.classList.remove('pop'); void p.offsetWidth; p.classList.add('pop'); }
+    }));
+})();
+
+// ---------- BackUpper: one call per step through the router; the backup log accumulates ----------
+(() => {
+  const root = document.getElementById('bu-stage');
+  const cmd = document.getElementById('bu-cmd'), out = document.getElementById('bu-out'), log = document.getElementById('bu-log');
+  const nodes = [...root.querySelectorAll('.node')];
+  const CALLS = [
+    { name: 'Read-only', cmd: 'Bash(cat notes.txt)', hit: 0, cls: 'pass', r: 'pass ✓',
+      out: 'Reads change nothing: <b>passed straight through</b>, no backup.' },
+    { name: 'Rewrite', cmd: 'Bash(rm data.csv)', hit: 1, r: 'rewrite ✓',
+      out: 'Runs <span class="mono">mv data.csv .trash/</span> instead: nothing is deleted.', log: 'data.csv → .trash/' },
+    { name: 'Pair', cmd: 'Bash(pip install -U numpy)', hit: 2, r: 'pair ✓',
+      out: 'First runs <span class="mono">pip freeze &gt; reqs.txt</span>, then the upgrade.', log: 'reqs.txt (27 versions)' },
+    { name: 'Snapshot', cmd: 'Edit(src/model.py)', hit: 3, r: 'snapshot ✓',
+      out: 'A workspace edit: commits the files to a <b>shadow git repo</b> first.', log: 'shadow commit 3f2a…' },
+    { name: 'Subagent', cmd: 'Bash(./run.sh)', hit: 5, cls: 'sub', r: 'subagent ✓', checker: 'not read-only',
+      out: 'No rule fits. A <b>subagent</b> reads the script, then backs up <span class="mono">data/</span> + a db dump.', log: 'data/ + db.sql' },
+    { name: 'Restore', cmd: '“I want my old dependencies back!”', restore: true,
+      out: '<b>BackUpper restore</b> → <span class="mono">pip install -r reqs.txt</span><br>✓ 27 packages back to their old versions' },
+  ];
+  stepper(root, CALLS.map(c => c.name),
+    ['Every call is checked first. <b>Read-only</b> calls pass with no cost.',
+     '<b>Tier 1</b> rewrites a destructive command into a reversible one.',
+     '<b>Tier 2</b> pairs a command with the backup that undoes it.',
+     '<b>Tier 3</b> snapshots edits inside the workspace.',
+     'Anything else: an <b>LLM checker</b> spots that it changes state, and a <b>lightweight subagent</b> backs it up.',
+     'Every backup is <b>logged with how to restore it</b>, however many actions ago.'],
+    (i, fresh) => {
+      const c = CALLS[i];
+      cmd.textContent = c.cmd;
+      out.innerHTML = c.out; out.style.background = c.restore ? 'var(--mint-bg)' : (c.cls === 'sub' ? 'var(--lav-bg)' : c.cls === 'pass' ? '#F3EEE3' : 'var(--mint-bg)');
+      nodes.forEach((n, k) => {
+        n.className = 'node' + (k === 5 ? ' sub' : '');
+        n.querySelector('.r').textContent = '';
+        if (c.restore) return;
+        if (k < c.hit) { if (k === 4) { n.classList.add('hit'); n.querySelector('.r').textContent = c.checker; } else n.classList.add('skip'); }
+        if (k === c.hit) { n.classList.add('hit'); if (c.cls) n.classList.add(c.cls); n.querySelector('.r').textContent = c.r; }
+      });
+      if (c.restore) nodes[2].classList.add('hit'), nodes[2].querySelector('.r').textContent = 'from Tier 2 backup';
+      const items = CALLS.slice(0, i + 1).filter(x => x.log).map(x => x.log);
+      log.innerHTML = items.map((x, k) => `<li class="${k === items.length - 1 && CALLS[i].log ? 'pop' : ''}">✓ ${x}</li>`).join('') || '<li style="border-style:dashed;color:#9A9184">empty</li>';
+      if (fresh) { [cmd.parentElement, out].forEach(e => { e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop'); }); }
+    });
+})();
 
 // ---------- charts (numbers from the paper) ----------
-const INK = '#2B2B2B', MUTED = '#6B6558', GRID = '#E7E1D4', C = { pass: '#F2C14E', owbr: '#E58A62', rmbr: '#2E8A62', mint: '#6CC4A1', lav: '#9C87E0', gray: '#B8B0A2' };
+const INK = '#2B2B2B', MUTED = '#6B6558', GRID = '#EDE7DA';
+const C = { pass: '#F2C14E', owbr: '#E58A62', rmbr: '#2E8A62', mint: '#6CC4A1', lav: '#9C87E0', gray: '#B8B0A2', blue: '#8EA6E0' };
 const MODELS = ['Claude\nOpus-5', 'Claude\nSonnet-5', 'GPT\n5.6-Sol', 'GPT\n5.6-Terra', 'DeepSeek\nV4-Pro', 'Gemini\n3.7-Flash'];
-const base = () => ({ textStyle: { fontFamily: 'Source Sans 3, sans-serif', color: INK },
-  tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, valueFormatter: v => v + '%' },
-  legend: { top: 0, textStyle: { color: MUTED } }, grid: { left: 44, right: 12, top: 40, bottom: 48 },
-  yAxis: { type: 'value', max: 100, axisLabel: { formatter: '{value}%', color: MUTED }, splitLine: { lineStyle: { color: GRID } } } });
-const xcat = (data) => ({ type: 'category', data, axisLabel: { color: INK, interval: 0, lineHeight: 15 }, axisTick: { show: false }, axisLine: { lineStyle: { color: GRID } } });
-const bar = (name, data, color, extra = {}) => ({ name, type: 'bar', data, itemStyle: { color, borderRadius: [4, 4, 0, 0] }, barGap: '15%', ...extra });
-const lbl = (fmt = '{c}', color = INK) => ({ label: { show: true, position: 'top', formatter: fmt, fontSize: 11.5, color, fontWeight: 600 } });
+const base = (o = {}) => ({ textStyle: { fontFamily: 'Source Sans 3, sans-serif', color: INK }, animationDuration: 700,
+  tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, valueFormatter: v => (v == null ? '–' : v + '%') },
+  legend: { top: 0, itemWidth: 14, itemHeight: 10, textStyle: { color: MUTED, fontSize: 13 } },
+  grid: { left: 46, right: 12, top: 44, bottom: 46 },
+  yAxis: { type: 'value', max: 100, interval: 25, axisLabel: { formatter: '{value}%', color: MUTED }, splitLine: { lineStyle: { color: GRID } } }, ...o });
+const xcat = data => ({ type: 'category', data, axisLabel: { color: INK, interval: 0, lineHeight: 15, fontSize: 13 }, axisTick: { show: false }, axisLine: { lineStyle: { color: '#D8D0BF' } } });
+const LBL = (fs = 11) => ({ show: true, position: 'top', fontSize: fs, color: INK, formatter: p => (p.value == null ? '' : p.value) });
+const bar = (name, data, color, o = {}) => ({ name, type: 'bar', data, barGap: '18%', label: LBL(), itemStyle: { color, borderRadius: [3, 3, 0, 0] }, emphasis: { focus: 'series' }, ...o });
 const charts = {
-  'c-rb-main': () => ({ ...base(), xAxis: xcat(MODELS), series: [
-    bar('Task pass rate', [92.2, 82.0, 90.7, 85.9, 81.5, 84.4], C.pass),
-    bar('OWBR', [41.6, 25.1, 12.5, 9.1, 8.3, 7.5], C.owbr),
-    bar('RMBR', [64.4, 11.2, 5.9, 4.4, 2.9, 2.4], C.rmbr, lbl()) ] }),
-  'c-rb-cap': () => ({ ...base(), legend: { top: 0, textStyle: { color: MUTED } },
+  'c-rb-main': () => base({ xAxis: xcat(MODELS), series: [
+    bar('Task pass rate', [92.2, 82.0, 90.7, 85.9, 81.5, 84.4], C.pass, { label: LBL(10) }),
+    bar('OWBR', [41.6, 25.1, 12.5, 9.1, 8.3, 7.5], C.owbr, { label: LBL(10) }),
+    bar('RMBR', [64.4, 11.2, 5.9, 4.4, 2.9, 2.4], C.rmbr, { label: LBL(10) }) ] }),
+  'c-rb-cap': () => base({ tooltip: { trigger: 'axis' }, grid: { left: 40, right: 46, top: 44, bottom: 30 },
     yAxis: [{ type: 'value', name: 'AA index', max: 60, axisLabel: { color: MUTED }, splitLine: { lineStyle: { color: GRID } } },
             { type: 'value', name: 'RMBR', max: 100, axisLabel: { formatter: '{value}%', color: MUTED }, splitLine: { show: false } }],
-    tooltip: { trigger: 'axis' }, grid: { left: 40, right: 44, top: 44, bottom: 30 },
     xAxis: xcat(['GPT 5.4', 'GPT 5.5', 'GPT 5.6-Sol']),
-    series: [bar('Intelligence index', [39, 42, 47], C.gray, lbl()), { name: 'RMBR', type: 'line', yAxisIndex: 1, data: [6.7, 5.0, 5.0], symbolSize: 9, lineStyle: { color: C.rmbr, width: 3 }, itemStyle: { color: C.rmbr }, ...lbl('{c}%', C.rmbr) }] }),
-  'c-rb-harness': () => ({ ...base(), xAxis: xcat(['Claude\nOpus-5', 'GPT\n5.6-Sol', 'DeepSeek\nV4-Pro']), series: [
-    bar('Claude Code', [70.0, 8.3, 1.7], '#E0896A'), bar('Codex', [73.3, 5.0, 0.0], '#5FB89A'), bar('Hermes', [68.3, 5.0, 1.7], '#8EA6E0') ] }),
-  'c-rb-tool': () => ({ ...base(), legend: { show: false }, yAxis: { ...base().yAxis, max: 40 }, xAxis: xcat(['Terminal', 'SQL', 'Browser', 'Email', 'DevOps']),
-    series: [bar('RMBR', [13.6, 12.7, 15.7, 20.8, 20.0], C.rmbr, { ...lbl('{c}%'), barWidth: '45%' })] }),
-  'c-bu-main': () => ({ ...base(), xAxis: xcat(MODELS), series: [
-    bar('Without BackUpper', [64.4, 11.2, 5.9, 4.4, 2.9, 2.4], C.gray, lbl()),
-    bar('With BackUpper', [100, 100, 100, 100, 100, 100], C.rmbr, lbl()) ] }),
-  'c-bu-base': () => ({ ...base(), xAxis: xcat(['RMBR', 'OWBR']), series: [
-    bar('BackUpper', [100, 100], C.rmbr, lbl()), bar('Skill-Based', [81.4, 80.5], C.pass, lbl()),
-    bar('BackUpper w/o experience', [77.6, 73.2], C.mint, lbl()), bar('No backup support', [15.2, 17.4], C.gray, lbl()),
-    bar('Destructive Command Guard', [8.1, 7.3], C.owbr, lbl()) ] }),
-  'c-bu-restore': () => ({ ...base(), legend: { show: false }, yAxis: { ...base().yAxis, min: 0 }, xAxis: xcat(['Terminal', 'SQL', 'Browser', 'Email', 'DevOps']),
-    series: [bar('Similarity', [94.7, 90.5, 88.9, 96.4, 92.4], C.rmbr, { ...lbl('{c}%'), barWidth: '45%',
-      markLine: { symbol: 'none', data: [{ yAxis: 14.3, label: { formatter: 'no restore 14.3%', color: MUTED, position: 'insideStartTop' }, lineStyle: { color: C.owbr, type: 'dashed' } }] } })] }),
-  'c-bu-pref': () => ({ ...base(), xAxis: xcat(['High-Impact', 'Beyond-Request', 'Human-Work']), series: [
-    bar('Claude Opus-5', [89.8, 76.2, 90.7], '#E0896A'), bar('GPT 5.6-Sol', [95.7, 76.9, 94.0], '#5FB89A'), bar('DeepSeek V4-Pro', [84.1, 73.2, 80.3], '#8EA6E0') ] }),
-  'c-bu-gen': () => ({ ...base(), xAxis: xcat(['GPT 5.6-Sol', 'Claude Opus-5']), series: [
-    bar('Without BackUpper', [23.1, 47.1], C.gray, lbl()), bar('With BackUpper', [100, 100], C.rmbr, lbl()) ] }),
-  'c-bu-self': () => ({ ...base(), legend: { show: false }, yAxis: { ...base().yAxis, max: 40 },
+    series: [bar('Intelligence index', [39, 42, 47], C.gray), { name: 'RMBR', type: 'line', yAxisIndex: 1, data: [6.7, 5.0, 5.0], symbolSize: 9, lineStyle: { color: C.rmbr, width: 3 }, itemStyle: { color: C.rmbr }, label: { ...LBL(), formatter: '{c}%', color: C.rmbr } }] }),
+  'c-rb-harness': () => base({ xAxis: xcat(['Claude\nOpus-5', 'GPT\n5.6-Sol', 'DeepSeek\nV4-Pro']), series: [
+    bar('Claude Code', [70.0, 8.3, 1.7], C.owbr), bar('Codex', [73.3, 5.0, 0.0], C.mint), bar('Hermes', [68.3, 5.0, 1.7], C.blue) ] }),
+  'c-rb-tool': () => base({ legend: { show: false }, yAxis: { ...base().yAxis, max: 40, interval: 10 }, xAxis: xcat(['Terminal', 'SQL', 'Browser', 'Email', 'DevOps']),
+    series: [bar('RMBR', [13.6, 12.7, 15.7, 20.8, 20.0], C.rmbr, { barWidth: '42%', label: { ...LBL(12), formatter: '{c}%' } })] }),
+  'c-bu-main': () => base({ legend: { top: 0, itemWidth: 14, itemHeight: 10, textStyle: { color: MUTED, fontSize: 12.5 } }, grid: { left: 46, right: 12, top: 62, bottom: 34 },
+    xAxis: xcat(['RMBR', 'OWBR', 'State similarity']), series: [
+      bar('BackUpper', [100, 100, 92.2], C.rmbr),
+      bar('Skill-Based', [81.4, 80.5, 71.1], C.pass),
+      bar('BackUpper w/o experience', [77.6, 73.2, 68.7], C.mint),
+      bar('Post-hoc Recovery', [null, null, 47.4], C.lav),
+      bar('No backup support', [15.2, 17.4, 25.6], C.gray),
+      bar('Destructive Command Guard', [8.1, 7.3, 20.3], C.owbr) ] }),
+  'c-bu-models': () => base({ xAxis: xcat(MODELS), series: [
+    bar('Without BackUpper', [64.4, 11.2, 5.9, 4.4, 2.9, 2.4], C.gray), bar('With BackUpper', [100, 100, 100, 100, 100, 100], C.rmbr) ] }),
+  'c-bu-restore': () => base({ xAxis: xcat(['Terminal', 'SQL', 'Browser', 'Email', 'DevOps']), series: [
+    bar('No restore', [37.2, 10.1, 0.0, 0.0, 0.0], C.gray), bar('Restored by BackUpper', [94.7, 90.5, 88.9, 96.4, 92.4], C.rmbr) ] }),
+  'c-bu-pref': () => base({ xAxis: xcat(['High-Impact', 'Beyond-Request', 'Human-Work']), series: [
+    bar('Claude Opus-5', [89.8, 76.2, 90.7], C.owbr), bar('GPT 5.6-Sol', [95.7, 76.9, 94.0], C.mint), bar('DeepSeek V4-Pro', [84.1, 73.2, 80.3], C.blue) ] }),
+  'c-bu-gen': () => base({ xAxis: xcat(['GPT 5.6-Sol', 'Claude Opus-5']), series: [
+    bar('Without BackUpper', [23.1, 47.1], C.gray), bar('With BackUpper', [100, 100], C.rmbr) ] }),
+  'c-bu-self': () => base({ legend: { show: false }, yAxis: { ...base().yAxis, max: 40, interval: 10 },
     xAxis: { ...xcat(['0', '5', '10', '20', '30']), name: 'tasks used for self-improvement', nameLocation: 'middle', nameGap: 28, nameTextStyle: { color: MUTED } },
-    series: [{ name: 'Rule coverage', type: 'line', data: [14.9, 21.6, 25.7, 29.4, 31.2], symbolSize: 9, lineStyle: { color: C.rmbr, width: 3 }, itemStyle: { color: C.rmbr }, areaStyle: { color: 'rgba(108,196,161,.18)' }, ...lbl('{c}%') }] }),
+    series: [{ name: 'Rule coverage', type: 'line', data: [14.9, 21.6, 25.7, 29.4, 31.2], symbolSize: 9, lineStyle: { color: C.rmbr, width: 3 }, itemStyle: { color: C.rmbr }, areaStyle: { color: 'rgba(108,196,161,.18)' }, label: { ...LBL(12), formatter: '{c}%' } }] }),
 };
 const made = {};
 function draw(id) { const el = document.getElementById(id); if (!el || made[id] || !el.offsetWidth) return; made[id] = echarts.init(el); made[id].setOption(charts[id]()); }
