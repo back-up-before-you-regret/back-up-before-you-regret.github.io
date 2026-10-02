@@ -60,8 +60,6 @@
   body { overflow-x: hidden; }
   section.band { margin-top: 0; padding: 52px 0 56px; box-shadow: 0 0 0 100vmax var(--bandc); clip-path: inset(0 -100vmax); background: var(--bandc); }
   section.band + section.band { border-top: 1px solid var(--line); }
-  .b-regret { --bandc: #FCEFE7; }
-  .b-backup { --bandc: #E9F5EE; }
   .b-white  { --bandc: #FFFFFF; }
   .b-cream  { --bandc: #FBF8F1; }
   .eyebrow { display: inline-block; font: 700 13px "IBM Plex Mono", monospace; letter-spacing: .12em; text-transform: uppercase; padding: 2px 10px; border-radius: 999px; margin-bottom: 10px; }
@@ -191,7 +189,7 @@
     <figcaption><b>Figure 1.</b> One <code>pip install -U numpy</code> silently changes 27 packages; 100+ actions later the old environment is gone. With BackUpper, the same call is caught, the environment is backed up first, and it restores in one step.</figcaption>
   </figure>
 
-  <section id="regretbench" class="band b-regret">
+  <section id="regretbench" class="band b-white b-regret">
     <div class="eyebrow">01 · The problem</div>
     <h2><span class="acc2">RegretBench</span>: do agents back up before you regret?</h2>
     <p>Each task is built from a real <b>regret moment</b>: someone let an action change state they later needed, and could not get it back. The agent finishes the task; the question is whether it kept a way back.</p>
@@ -217,7 +215,7 @@
     </div>
   </section>
 
-  <section id="backupper" class="band b-backup">
+  <section id="backupper" class="band b-cream b-backup">
     <div class="eyebrow">02 · The fix</div>
     <h2><span class="acc2">BackUpper</span>: back up before every tool call</h2>
     <p>BackUpper sits on the harness's pre-tool-call hook. It <b>intercepts</b> each call, <b>backs up</b> the state the call will change, then lets the call <b>run</b>. When you regret it, you <b>restore</b>.</p>
