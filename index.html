@@ -68,7 +68,7 @@
   /* stage + steps (shared by both demos) */
   .stage { margin-top: 22px; border: 1px solid var(--line); border-radius: 14px; padding: 22px; background: #fff; }
   .cream .stage { background: #fff; } .white .stage { background: var(--cream); }
-  .canvas { min-height: 330px; }
+
   .note { margin-top: 14px; font-size: 15.5px; color: var(--ink); min-height: 26px; }
   .note b { color: var(--accent); }
   .steps { display: flex; justify-content: space-between; position: relative; margin: 22px 6px 0; }
@@ -86,7 +86,15 @@
   .ctrl button:disabled { opacity: .35; cursor: default; }
   .respane h3 { font-size: 21px; margin: 0 0 6px; }
   .respane .cap { font-size: 16px; color: var(--ink); }
-  .respane .chart { height: 400px; }
+  .canvas, .respane { overflow: hidden; }
+  @media (min-width: 761px) {
+    #rb-stage .canvas, #rb-stage .respane { height: 380px; }
+    #bu-stage .canvas, #bu-stage .respane { height: 440px; }
+  }
+  #rb-stage .respane .chart { height: 246px; }
+  #bu-stage .respane .chart { height: 318px; }
+  .respane .lead { margin-bottom: 0; }
+  .note { min-height: 52px; }
   .replay { display: block; margin: 14px 0 0 auto; background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 4px 14px; font: 13px "IBM Plex Mono", monospace; color: var(--muted); cursor: pointer; }
   .pop { animation: pop .45s cubic-bezier(.3,1.6,.5,1) both; }
   @keyframes pop { from { opacity: 0; transform: translateY(10px) scale(.94); } to { opacity: 1; transform: none; } }
@@ -176,6 +184,9 @@
     .cards { grid-template-columns: repeat(2, 1fr); }
     .step { font-size: 10.5px; max-width: 70px; }
     .stage { padding: 14px; }
+    #rb-stage .canvas, #rb-stage .respane { height: 704px; }
+    #bu-stage .canvas, #bu-stage .respane { height: 744px; }
+    .note { min-height: 104px; }
   }
 </style>
 </head>
@@ -304,11 +315,9 @@
       </div>
       <div class="respane" hidden>
       <h3>The only method that covers every regret moment, and restores the most</h3>
-      <p class="lead">BackUpper reaches <b>100%</b> RMBR and OWBR and the highest restored-state similarity (<b>92.2%</b>). The strongest baseline, a detailed backup skill for the main agent, reaches 81.4% RMBR but only 71.1% similarity; recovering after the fact restores 47.4%.</p>
+      <p class="lead">Only BackUpper reaches <b>100%</b> RMBR and OWBR, and it restores the most state (<b>92.2%</b>). The strongest baseline reaches 81.4% RMBR but only 71.1% similarity.</p>
       <div class="chart" id="c-bu-main"></div>
-      <p class="cap">205 tasks, averaged over six models. Post-hoc Recovery does not back up before actions, so it is evaluated only by state similarity.</p>
-      <div class="cards"><div><b>92.2%</b><span>restored-state similarity</span></div><div><b>$0.014</b><span>per task*</span></div><div><b>7×</b><span>fewer tokens*</span></div><div><b>84.5%</b><span>F1 on user preferences</span></div></div>
-      <p class="cap">* vs. the main agent backing up by itself, with prompt caching.</p>
+      <p class="cap">205 tasks, six models. Post-hoc Recovery restores after the fact, so it has similarity only.</p>
       </div>
       <div class="note"></div>
       <div class="steps"></div>
@@ -316,6 +325,8 @@
     </div>
 
     <div class="result" style="margin-top:16px">
+      <div class="cards"><div><b>92.2%</b><span>restored-state similarity</span></div><div><b>$0.014</b><span>per task*</span></div><div><b>7×</b><span>fewer tokens*</span></div><div><b>84.5%</b><span>F1 on user preferences</span></div></div>
+      <p class="cap">* vs. the main agent backing up by itself, with prompt caching.</p>
       <details class="more"><summary>More BackUpper results</summary><div>
         <p class="sub">Every model reaches 100%</p><div class="chart sm" id="c-bu-models"></div><p class="cap">RMBR without and with BackUpper.</p>
         <div class="two">
