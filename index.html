@@ -45,6 +45,9 @@
   .btn:hover { text-decoration: none; opacity: .88; }
   .btn svg { width: 16px; height: 16px; }
 
+  .tldr { margin: 30px 0 0; background: #fff; border: 1px solid var(--line); border-left: 5px solid var(--mint); border-radius: 10px; padding: 18px 22px; }
+  .tldr h3 { margin: 0 0 8px; font-size: 15px; letter-spacing: .08em; color: var(--accent); }
+  .tldr p { margin: 0 0 8px; } .tldr p:last-child { margin: 0; }
   /* figure */
   figure { margin: 30px 0 0; }
   figure video { width: 100%; display: block; border: 1px solid var(--line); border-radius: 6px; background: #F3EEE3; }
@@ -124,6 +127,13 @@
     </div>
     <div class="chips">tested with <span>Claude Code</span><span>Codex</span><span>Hermes</span></div>
   </header>
+
+  <div class="tldr">
+    <h3>TL;DR</h3>
+    <p><b>Coding agents modify real-world state</b>, such as software environments, databases, and files, and users often regret the loss later, when they find they still need it.</p>
+    <p><b>RegretBench</b> grounds 205 tasks in real-world regret moments and tests whether coding agents back up, how often, and whether it matches what humans later need.</p>
+    <p><b>BackUpper</b> is a plug-in that backs up affected state before every tool call, covering every regret-moment action at $0.014 per task.</p>
+  </div>
 
   <figure>
     <video src="assets/promo.mp4" poster="assets/poster.jpg" controls muted playsinline preload="metadata"></video>
