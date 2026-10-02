@@ -88,10 +88,10 @@
   .respane .cap { font-size: 17px; color: var(--ink); }
   .canvas, .respane { overflow: hidden; }
   @media (min-width: 761px) {
-    #rb-stage .canvas, #rb-stage .respane { height: 380px; }
-    #bu-stage .canvas, #bu-stage .respane { height: 496px; }
+    #rb-stage .canvas, #rb-stage .respane { height: 434px; }
+    #bu-stage .canvas, #bu-stage .respane { height: 506px; }
   }
-  #rb-stage .respane .chart { height: 300px; }
+  #rb-stage .respane .chart { height: 350px; }
   #bu-stage .respane .chart { height: 400px; }
   .respane .lead { margin-bottom: 0; }
   .note { min-height: 52px; }
@@ -115,6 +115,15 @@
   .extract { display: grid; gap: 6px; }
   .extract div { display: grid; grid-template-columns: 70px 1fr; gap: 8px; align-items: baseline; }
   .extract b { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .taskex { display: grid; grid-template-columns: 1.35fr 1fr; gap: 12px; margin-top: 12px; }
+  .turns { border: 2px solid var(--ink); border-radius: 12px; background: #fff; padding: 8px 12px; font-size: 14px; line-height: 1.45; box-shadow: 4px 4px 0 var(--ink); }
+  .turns > div { padding: 2px 0; } .turns b { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-right: 6px; }
+  .turns .dots { color: var(--faint); padding: 0 0 0 4px; line-height: 1; }
+  .turns .rm { background: #FFE9E4; border-radius: 6px; padding: 3px 6px; margin: 0 -6px; }
+  .judge { display: grid; gap: 6px; }
+  .judge div { border: 2px solid var(--ink); border-radius: 10px; padding: 4px 10px; font-weight: 700; font-size: 14px; }
+  .judge small { font-weight: 400; color: var(--muted); margin-left: 6px; }
+  .judge .ok { background: var(--mint-bg); } .judge .bad { background: #FFD9D2; } .judge .mid { background: var(--butter-bg); }
   .verdict { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
   .verdict div { border-radius: 12px; padding: 10px 12px; border: 2px solid var(--ink); text-align: center; font-weight: 700; }
   .verdict small { display: block; font-weight: 400; color: var(--muted); }
@@ -187,9 +196,9 @@
     .cards { grid-template-columns: repeat(2, 1fr); }
     .step { font-size: 10.5px; max-width: 70px; }
     .stage { padding: 14px; }
-    #rb-stage .canvas, #rb-stage .respane { height: 704px; }
-    #bu-stage .canvas, #bu-stage .respane { height: 856px; }
-    .note { min-height: 104px; }
+    #rb-stage .canvas, #rb-stage .respane { height: 880px; }
+    #bu-stage .canvas, #bu-stage .respane { height: 872px; }
+    .note { min-height: 130px; }
   }
 </style>
 </head>
@@ -239,33 +248,42 @@
   <section id="regretbench" class="band cream">
     <div class="eyebrow">01 · Benchmark</div>
     <h2><span class="acc">RegretBench</span>: built from real regret moments</h2>
-    <p>Each task is built from a real-world <b>regret moment</b>, where a user explicitly reported losing state they later needed and regretted not backing it up. We pair it with a real environment and a real multi-turn conversation to build an executable task. We then measure three things: whether the agent <b>completes the task</b> (Pass Rate), whether it <b>backs up before the regret moment</b> (RMBR), and how often it <b>backs up anything outside the workspace</b> (OWBR). Since harnesses already snapshot the workspace, we only count backups beyond it.</p>
+    <p>Each task is built from a real-world <b>regret moment</b>, reported on platforms such as X.com, GitHub, and Stack Overflow, where a user explicitly reported losing state they later needed and regretted not backing it up. We pair it with a real environment and a real multi-turn conversation to build an executable task. We then measure three things: whether the agent <b>completes the task</b> (Pass Rate), whether it <b>backs up before the regret moment</b> (RMBR), and how often it <b>backs up anything outside the workspace</b> (OWBR). Since harnesses already snapshot the workspace, we only count backups beyond it.</p>
     <div class="stage" id="rb-stage">
       <div class="canvas">
         <div class="pipe">
           <div class="col" data-s="0">
             <div class="card quote"><h4>① Real regret moment</h4>
-              “I ran <span class="mono">pip install --upgrade ipykernel</span> and it replaced traitlets 5.1.1. <b>That was the only copy.</b>”
-              <div style="margin-top:6px"><span class="tag">Stack Overflow</span><span class="tag">X.com</span><span class="tag">GitHub</span></div></div>
+              “I ran <span class="mono">pip install --upgrade ipykernel</span> for a new notebook client. It silently upgraded traitlets, jupyter_client, tornado, pyzmq… <b>My old environment was the only copy, and it's gone.</b>”
+              <div style="margin-top:6px"><span class="tag">Stack Overflow</span></div></div>
           </div>
           <div class="arrow" data-s="1">→</div>
           <div class="col" data-s="1">
             <div class="card"><h4>② What went wrong</h4>
               <div class="extract">
                 <div><b>Action</b><span class="mono">pip install -U ipykernel</span></div>
-                <div><b>Lost</b><span><span class="tag red">traitlets 5.1.1</span> replaced in place</span></div>
-                <div><b>Need</b><span>get the old version back</span></div>
+                <div><b>Lost</b><span><span class="tag red">traitlets 5.1.1</span><span class="tag red">jupyter_client 7.1</span><span class="tag red">tornado 6.1</span><span class="tag red">pyzmq 22.3</span><span class="tag red">+ more</span></span></div>
+                <div><b>Need</b><span>the whole old environment back</span></div>
               </div></div>
           </div>
           <div class="arrow" data-s="2">→</div>
           <div class="col" data-s="2">
-            <div class="card env"><h4>③ Real environment</h4><div class="mono">/opt/conda/<br>  traitlets 5.1.1<br>  ipykernel 6.9.1</div></div>
-            <div class="card task"><h4>+ Real conversation</h4>5 turns, ~45 actions; the upgrade is one of them, the regret comes later.</div>
+            <div class="card env"><h4>③ Real environment</h4><div class="mono">/opt/conda/ (outside workspace)<br>  ipykernel 6.9.1 · traitlets 5.1.1<br>  jupyter_client 7.1 · tornado 6.1 …</div></div>
+            <div class="card task"><h4>+ Real conversation</h4>Multi-turn, ~45 actions; the upgrade is one turn among many.</div>
           </div>
         </div>
-        <div class="verdict" data-s="3">
-          <div style="background:var(--mint-bg)">✓ Task done<small>task judge → pass rate</small></div>
-          <div style="background:#FFD9D2">✗ No backup before the upgrade<small>backup judge → RMBR · OWBR</small></div>
+        <div class="taskex" data-s="3">
+          <div class="turns">
+            <div><b>Turn 1</b> “Check the dependabot alert on the remote.”</div>
+            <div><b>Turn 2</b> “<span class="mono">flag_slow</span> flags normal regions, fix it.”</div>
+            <div class="dots">⋮</div>
+            <div class="rm"><b>Turn 5</b> “New notebook client: <span class="mono">pip install --upgrade ipykernel</span>” <span class="tag red">regret moment</span></div>
+          </div>
+          <div class="judge">
+            <div class="ok">✓ Task done<small>→ Pass Rate</small></div>
+            <div class="bad">✗ Nothing backed up before Turn 5<small>→ RMBR</small></div>
+            <div class="mid">1 of 4 out-of-workspace changes backed up<small>→ OWBR</small></div>
+          </div>
         </div>
       </div>
       <div class="respane" hidden>
@@ -299,11 +317,11 @@
       <div class="canvas">
         <div class="flow">
           <div>
-            <div class="callcard"><div class="lbl">incoming tool call</div><div class="cmd" id="bu-cmd"></div><div id="bu-pref" style="display:none;margin-top:8px;padding-top:8px;border-top:1px dashed #555;font:14px 'Source Sans 3',sans-serif;color:#FFD166"></div></div>
+            <div class="callcard"><div class="lbl">incoming tool call</div><div class="cmd" id="bu-cmd"></div><div id="bu-pref" style="min-height:44px;margin-top:8px;padding-top:8px;border-top:1px dashed #555;font:14px 'Source Sans 3',sans-serif;color:#FFD166"></div></div>
             <div class="outcome" id="bu-out"></div>
           </div>
           <div class="route" id="bu-route">
-            <div class="node prefnode" style="display:none"><span>🎯</span><span>Preference check <span class="k">personalized mode</span></span><span class="r"></span></div>
+            <div class="node prefnode"><span>🎯</span><span>Preference check <span class="k">personalized mode</span></span><span class="r"></span></div>
             <div class="node" data-n="0"><span>👀</span><span>Read-only allowlist</span><span class="r"></span></div>
             <div class="group">rules, no model call</div>
             <div class="node" data-n="1"><span>✏️</span><span><span class="k">Tier 1</span> Command rewriting</span><span class="r"></span></div>
@@ -483,10 +501,10 @@ function resultStep(root, on, chartId) {
   const parts = [...root.querySelectorAll('[data-s]')];
   stepper(root,
     ['Collect', 'Extract', 'Build', 'Evaluate', 'Results'],
-    ['Start from a <b>real regret moment</b>: 205 of them, from X.com, GitHub, Stack Overflow and news reports.',
-     'Pull out the <b>action</b> that caused the loss, the <b>state</b> that was lost, and what the user <b>needed</b> back.',
+    ['Start from a <b>real regret moment</b>: someone describes what they lost and could not get back.',
+     'Pull out the <b>action</b> that caused the loss, every piece of <b>state</b> it destroyed, and what the user <b>needed</b> back.',
      'Rebuild it as an <b>executable multi-turn task</b> in a real environment, with the lost state placed outside the harness\'s own backups.',
-     'Run the agent. A task judge checks it <b>finished</b>; a backup judge checks it <b>backed up before the regret moment</b>.',
+     'The agent works through the task. The upgrade arrives as one ordinary turn, and the judges check what it did.',
      'Agents finish <b>86.1%</b> of tasks, but back up only <b>17.4%</b> of OOW actions, and just <b>15.2%</b> of regret-moment actions.'],
     (i, fresh) => { resultStep(root, i === 4, 'c-rb-main'); if (i === 4) return; parts.forEach(p => {
       const s = +p.dataset.s, was = !p.classList.contains('hidden');
@@ -502,19 +520,19 @@ function resultStep(root, on, chartId) {
   const nodes = [...root.querySelectorAll('.node[data-n]')], prefNode = root.querySelector('.prefnode'), pref = document.getElementById('bu-pref');
   const CALLS = [
     { name: 'Read-only', cmd: 'Bash(cat notes.txt)', hit: 0, cls: 'pass', r: 'pass ✓',
-      out: 'Reads change nothing: <b>passed straight through</b>, no backup.' },
+      out: '<b>matched</b> <span class="mono">cat</span> on the read-only allowlist<br>→ runs, no backup needed' },
     { name: 'Rewrite', cmd: 'Bash(rm data.csv)', hit: 1, r: 'rewrite ✓',
-      out: 'Runs <span class="mono">mv data.csv .trash/</span> instead: nothing is deleted.', log: 'data.csv → .trash/' },
+      out: '<b>matched rule</b> <span class="mono">rm &lt;file&gt;</span><br>→ runs <span class="mono">mv data.csv .trash/</span> instead', log: 'data.csv → .trash/' },
     { name: 'Pair', cmd: 'Bash(pip install -U numpy)', hit: 2, r: 'pair ✓',
-      out: 'First runs <span class="mono">pip freeze &gt; reqs.txt</span>, then the upgrade.', log: 'reqs.txt (27 versions)' },
+      out: '<b>matched rule</b> <span class="mono">pip install -U</span><br>→ first <span class="mono">pip freeze &gt; reqs.txt</span>, then the upgrade', log: 'reqs.txt (27 versions)' },
     { name: 'Snapshot', cmd: 'Edit(src/model.py)', hit: 3, r: 'snapshot ✓',
-      out: 'A workspace edit: commits the files to a <b>shadow git repo</b> first.', log: 'shadow commit 3f2a…' },
+      out: '<b>matched</b> a file edit inside the workspace<br>→ commits it to a shadow git repo first', log: 'shadow commit 3f2a…' },
     { name: 'Subagent', cmd: 'Bash(./run.sh)', hit: 5, cls: 'sub', r: 'subagent ✓', checker: 'not read-only',
-      out: 'No rule fits. A <b>subagent</b> reads the script, then backs up <span class="mono">data/</span> + a db dump.', log: 'data/ + db.sql' },
+      out: '<b>no rule matched</b>; the subagent reads <span class="mono">run.sh</span>: it wipes <span class="mono">data/</span> and resets the db<br>→ backs up <span class="mono">data/</span> + <span class="mono">pg_dump</span>', log: 'data/ + db.sql' },
     { name: 'Customize', cmd: 'Bash(rm -rf build/)', pref: '🎯 your preference: “only back up what I wrote by hand”',
-      out: 'Build outputs aren\'t hand-written, so it <b>runs without a backup</b>: less storage, fewer subagent calls.' },
+      out: '<b>no match</b>: build outputs aren\'t hand-written<br>→ runs without a backup' },
     { name: 'Restore', cmd: '“I want my old dependencies back!”', restore: true,
-      out: '<b>BackUpper restore</b> → <span class="mono">pip install -r reqs.txt</span><br>✓ 27 packages back to their old versions' },
+      out: '<b>found</b> the Tier 2 backup <span class="mono">reqs.txt</span><br>→ <span class="mono">pip install -r reqs.txt</span>: 27 packages back' },
   ];
   stepper(root, CALLS.map(c => c.name).concat('Results'),
     ['Every call is checked first. <b>Read-only</b> calls pass with no cost.',
@@ -522,7 +540,7 @@ function resultStep(root, on, chartId) {
      '<b>Tier 2</b> pairs a command with the backup that undoes it.',
      '<b>Tier 3</b> snapshots edits inside the workspace.',
      'Anything else: an <b>LLM checker</b> spots that it changes state, and a <b>lightweight subagent</b> backs it up.',
-     'Say what you care about in plain words. In a personalized mode a <b>preference check</b> runs before every tier and only backs up calls that match (<b>84.5% F1</b>).',
+     'Say what you care about in plain words. In a personalized mode a <b>preference check</b> runs before every tier and only backs up calls that match, saving storage and subagent calls (<b>84.5% F1</b>).',
      'Every backup is <b>logged with how to restore it</b>, however many actions ago.',
      'Restoring from BackUpper reaches <b>92.2%</b> state similarity to the original, with <b>every action covered</b>, outperforming others.'],
     (i, fresh) => {
@@ -530,9 +548,9 @@ function resultStep(root, on, chartId) {
       const c = CALLS[i];
       cmd.textContent = c.cmd;
       out.innerHTML = c.out; out.style.background = c.pref ? 'var(--butter-bg)' : c.restore ? 'var(--mint-bg)' : (c.cls === 'sub' ? 'var(--lav-bg)' : c.cls === 'pass' ? '#F3EEE3' : 'var(--mint-bg)');
-      pref.style.display = c.pref ? '' : 'none'; pref.textContent = c.pref || '';
-      prefNode.style.display = c.pref ? '' : 'none'; prefNode.className = 'node prefnode' + (c.pref ? ' hit' : '');
-      prefNode.querySelector('.r').textContent = c.pref ? 'no match → skip' : '';
+      pref.textContent = c.pref || ''; pref.style.visibility = c.pref ? 'visible' : 'hidden';
+      prefNode.className = 'node prefnode' + (c.pref ? ' hit' : ' idle');
+      prefNode.querySelector('.r').textContent = c.pref ? 'no match → skip' : 'off (Full mode)';
       nodes.forEach((n, k) => {
         n.className = 'node' + (k === 5 ? ' sub' : '');
         n.querySelector('.r').textContent = '';
