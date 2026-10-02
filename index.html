@@ -517,7 +517,7 @@ function resultStep(root, on, chartId) {
      '<b>Tier 3</b> snapshots edits inside the workspace.',
      'Anything else: an <b>LLM checker</b> spots that it changes state, and a <b>lightweight subagent</b> backs it up.',
      'Every backup is <b>logged with how to restore it</b>, however many actions ago.',
-     'Only BackUpper reaches <b>100%</b> RMBR and OWBR, and it restores the most state (<b>92.2%</b>). The strongest baseline reaches 81.4% RMBR but only 71.1% similarity.'],
+     'Restoring from BackUpper reaches <b>92.2%</b> state similarity to the original, with <b>every action covered</b>, outperforming all other methods.'],
     (i, fresh) => {
       resultStep(root, i === CALLS.length, 'c-bu-main'); if (i === CALLS.length) return;
       const c = CALLS[i];
