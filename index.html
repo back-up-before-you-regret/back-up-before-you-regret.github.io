@@ -483,7 +483,7 @@ function resultStep(root, on, chartId) {
      'Pull out the <b>action</b> that caused the loss, the <b>state</b> that was lost, and what the user <b>needed</b> back.',
      'Rebuild it as an <b>executable multi-turn task</b> in a real environment, with the lost state placed outside the harness\'s own backups.',
      'Run the agent. A task judge checks it <b>finished</b>; a backup judge checks it <b>backed up before the regret moment</b>.',
-     'Across six frontier models, agents finish <b>86.1%</b> of tasks, back up only <b>17.4%</b> of the out-of-workspace state they change, and just <b>15.2%</b> of the steps users later regretted.'],
+     'Agents finish <b>86.1%</b> of tasks, but back up only <b>17.4%</b> of OOW actions, and just <b>15.2%</b> of regret-moment actions.'],
     (i, fresh) => { resultStep(root, i === 4, 'c-rb-main'); if (i === 4) return; parts.forEach(p => {
       const s = +p.dataset.s, was = !p.classList.contains('hidden');
       p.classList.toggle('hidden', s > i);
@@ -517,7 +517,7 @@ function resultStep(root, on, chartId) {
      '<b>Tier 3</b> snapshots edits inside the workspace.',
      'Anything else: an <b>LLM checker</b> spots that it changes state, and a <b>lightweight subagent</b> backs it up.',
      'Every backup is <b>logged with how to restore it</b>, however many actions ago.',
-     'Restoring from BackUpper reaches <b>92.2%</b> state similarity to the original, with <b>every action covered</b>, outperforming all other methods.'],
+     'Restoring from BackUpper reaches <b>92.2%</b> state similarity to the original, with <b>every action covered</b>, outperforming others.'],
     (i, fresh) => {
       resultStep(root, i === CALLS.length, 'c-bu-main'); if (i === CALLS.length) return;
       const c = CALLS[i];
