@@ -80,6 +80,13 @@
   .step.on span { border-color: var(--accent); background: var(--accent); }
   .step.cur span { box-shadow: 0 0 0 5px rgba(108,196,161,.35); }
   .step.cur { font-weight: 600; }
+  .ctrl { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+  .ctrl button { background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 6px 16px; font: 600 14px "IBM Plex Mono", monospace; color: var(--ink); cursor: pointer; }
+  .ctrl .next { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .ctrl button:disabled { opacity: .35; cursor: default; }
+  .respane h3 { font-size: 21px; margin: 0 0 6px; }
+  .respane .cap { font-size: 16px; color: var(--ink); }
+  .respane .chart { height: 400px; }
   .replay { display: block; margin: 14px 0 0 auto; background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 4px 14px; font: 13px "IBM Plex Mono", monospace; color: var(--muted); cursor: pointer; }
   .pop { animation: pop .45s cubic-bezier(.3,1.6,.5,1) both; }
   @keyframes pop { from { opacity: 0; transform: translateY(10px) scale(.94); } to { opacity: 1; transform: none; } }
@@ -136,7 +143,7 @@
   .lead { margin: 0 0 6px; }
   .chart { width: 100%; height: 380px; }
   .chart.sm { height: 300px; }
-  .cap { color: var(--muted); font-size: 14px; text-align: center; margin: 2px 0 0; }
+  .cap { color: var(--muted); font-size: 15px; text-align: center; margin: 2px 0 0; }
   .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 18px 0 4px; }
   .cards div { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; text-align: center; }
   .cards b { display: block; font-size: 25px; color: var(--accent); line-height: 1.2; }
@@ -247,16 +254,18 @@
           <div style="background:#FFD9D2">✗ No backup before the upgrade<small>backup judge → RMBR · OWBR</small></div>
         </div>
       </div>
-      <div class="note"></div>
-      <div class="steps"></div>
-      <button class="replay">↻ Replay</button>
-    </div>
-
-    <div class="result">
+      <div class="respane" hidden>
       <h3>Agents finish the task, but rarely back up first</h3>
       <p class="lead">Across six frontier models, agents finish <b>86.1%</b> of tasks, back up only <b>17.4%</b> of the out-of-workspace state they change, and just <b>15.2%</b> of the steps users later regretted.</p>
       <div class="chart" id="c-rb-main"></div>
       <p class="cap">Pass rate, out-of-workspace backup rate (OWBR) and regret-moment backup rate (RMBR) on all 205 tasks.</p>
+      </div>
+      <div class="note"></div>
+      <div class="steps"></div>
+      <div class="ctrl"><button class="prev">← Back</button><button class="next">Next →</button></div>
+    </div>
+
+    <div class="result" style="margin-top:16px">
       <details class="more"><summary>More RegretBench results</summary><div>
         <div class="cards"><div><b>205</b><span>executable tasks</span></div><div><b>5</b><span>tools: shell, SQL, browser, email, DevOps</span></div><div><b>~45</b><span>actions per task</span></div><div><b>3</b><span>real-world source categories</span></div></div>
         <div class="two">
@@ -293,18 +302,20 @@
         </div>
         <div class="log"><h4>🔒 backup log</h4><ul id="bu-log"></ul></div>
       </div>
-      <div class="note"></div>
-      <div class="steps"></div>
-      <button class="replay">↻ Replay</button>
-    </div>
-
-    <div class="result">
+      <div class="respane" hidden>
       <h3>The only method that covers every regret moment, and restores the most</h3>
       <p class="lead">BackUpper reaches <b>100%</b> RMBR and OWBR and the highest restored-state similarity (<b>92.2%</b>). The strongest baseline, a detailed backup skill for the main agent, reaches 81.4% RMBR but only 71.1% similarity; recovering after the fact restores 47.4%.</p>
       <div class="chart" id="c-bu-main"></div>
       <p class="cap">205 tasks, averaged over six models. Post-hoc Recovery does not back up before actions, so it is evaluated only by state similarity.</p>
       <div class="cards"><div><b>92.2%</b><span>restored-state similarity</span></div><div><b>$0.014</b><span>per task*</span></div><div><b>7×</b><span>fewer tokens*</span></div><div><b>84.5%</b><span>F1 on user preferences</span></div></div>
       <p class="cap">* vs. the main agent backing up by itself, with prompt caching.</p>
+      </div>
+      <div class="note"></div>
+      <div class="steps"></div>
+      <div class="ctrl"><button class="prev">← Back</button><button class="next">Next →</button></div>
+    </div>
+
+    <div class="result" style="margin-top:16px">
       <details class="more"><summary>More BackUpper results</summary><div>
         <p class="sub">Every model reaches 100%</p><div class="chart sm" id="c-bu-models"></div><p class="cap">RMBR without and with BackUpper.</p>
         <div class="two">
@@ -357,23 +368,95 @@
 </div>
 
 <script>
+// ---------- charts (numbers from the paper) ----------
+const INK = '#2B2B2B', MUTED = '#6B6558', GRID = '#EDE7DA';
+const C = { pass: '#F2C14E', owbr: '#E58A62', rmbr: '#2E8A62', mint: '#6CC4A1', lav: '#9C87E0', gray: '#B8B0A2', blue: '#8EA6E0' };
+const MODELS = ['Claude\nOpus-5', 'Claude\nSonnet-5', 'GPT\n5.6-Sol', 'GPT\n5.6-Terra', 'DeepSeek\nV4-Pro', 'Gemini\n3.7-Flash'];
+const base = (o = {}) => ({ textStyle: { fontFamily: 'Source Sans 3, sans-serif', color: INK }, animationDuration: 700,
+  tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, valueFormatter: v => (v == null ? '–' : v + '%') },
+  legend: { top: 0, itemWidth: 14, itemHeight: 10, textStyle: { color: MUTED, fontSize: 13 } },
+  grid: { left: 46, right: 12, top: 44, bottom: 46 },
+  yAxis: { type: 'value', max: 100, interval: 25, axisLabel: { formatter: '{value}%', color: MUTED }, splitLine: { lineStyle: { color: GRID } } }, ...o });
+const xcat = data => ({ type: 'category', data, axisLabel: { color: INK, interval: 0, lineHeight: 15, fontSize: 13 }, axisTick: { show: false }, axisLine: { lineStyle: { color: '#D8D0BF' } } });
+const LBL = (fs = 11) => ({ show: true, position: 'top', fontSize: fs, color: INK, formatter: p => (p.value == null ? '' : p.value) });
+const bar = (name, data, color, o = {}) => ({ name, type: 'bar', data, barGap: '18%', label: LBL(), itemStyle: { color, borderRadius: [3, 3, 0, 0] }, emphasis: { focus: 'series' }, ...o });
+const charts = {
+  'c-rb-main': () => base({ xAxis: xcat(MODELS), series: [
+    bar('Task pass rate', [92.2, 82.0, 90.7, 85.9, 81.5, 84.4], C.pass, { label: LBL(11.5) }),
+    bar('OWBR', [41.6, 25.1, 12.5, 9.1, 8.3, 7.5], C.owbr, { label: LBL(11.5) }),
+    bar('RMBR', [64.4, 11.2, 5.9, 4.4, 2.9, 2.4], C.rmbr, { label: LBL(11.5) }) ] }),
+  'c-rb-cap': () => base({ tooltip: { trigger: 'axis' }, grid: { left: 40, right: 46, top: 44, bottom: 30 },
+    yAxis: [{ type: 'value', name: 'AA index', max: 60, axisLabel: { color: MUTED }, splitLine: { lineStyle: { color: GRID } } },
+            { type: 'value', name: 'RMBR', max: 100, axisLabel: { formatter: '{value}%', color: MUTED }, splitLine: { show: false } }],
+    xAxis: xcat(['GPT 5.4', 'GPT 5.5', 'GPT 5.6-Sol']),
+    series: [bar('Intelligence index', [39, 42, 47], C.gray), { name: 'RMBR', type: 'line', yAxisIndex: 1, data: [6.7, 5.0, 5.0], symbolSize: 9, lineStyle: { color: C.rmbr, width: 3 }, itemStyle: { color: C.rmbr }, label: { ...LBL(), formatter: '{c}%', color: C.rmbr } }] }),
+  'c-rb-harness': () => base({ xAxis: xcat(['Claude\nOpus-5', 'GPT\n5.6-Sol', 'DeepSeek\nV4-Pro']), series: [
+    bar('Claude Code', [70.0, 8.3, 1.7], C.owbr), bar('Codex', [73.3, 5.0, 0.0], C.mint), bar('Hermes', [68.3, 5.0, 1.7], C.blue) ] }),
+  'c-rb-tool': () => base({ legend: { show: false }, yAxis: { ...base().yAxis, max: 40, interval: 10 }, xAxis: xcat(['Terminal', 'SQL', 'Browser', 'Email', 'DevOps']),
+    series: [bar('RMBR', [13.6, 12.7, 15.7, 20.8, 20.0], C.rmbr, { barWidth: '42%', label: { ...LBL(12), formatter: '{c}%' } })] }),
+  'c-bu-main': () => {
+    const M = [['BackUpper', C.rmbr], ['Skill-Based', C.pass], ['BackUpper w/o experience', C.mint], ['Post-hoc Recovery', C.lav], ['No backup support', C.gray], ['Destructive Command Guard', C.owbr]];
+    const V = { RMBR: [100, 81.4, 77.6, null, 15.2, 8.1], 'State similarity': [92.2, 71.1, 68.7, 47.4, 25.6, 20.3], OWBR: [100, 80.5, 73.2, null, 17.4, 7.3] };
+    const keys = Object.keys(V), W = 29, G = 3;
+    const title = keys.map((k, j) => ({ text: k, left: (4.5 + j * (W + G) + W / 2) + '%', textAlign: 'center', bottom: 4, textStyle: { fontSize: 18, fontWeight: 700, color: INK, fontFamily: 'Source Sans 3, sans-serif' } }));
+    const grid = [], xAxis = [], yAxis = [], series = [];
+    keys.forEach((k, j) => {
+      const rows = M.map((m, i) => [m, V[k][i]]).filter(r => r[1] != null);
+      grid.push({ left: (4.5 + j * (W + G)) + '%', width: W + '%', top: 70, bottom: 40 });
+      xAxis.push({ gridIndex: j, type: 'category', data: rows.map(r => r[0][0]), axisLabel: { show: false }, axisTick: { show: false }, axisLine: { lineStyle: { color: '#D8D0BF' } } });
+      yAxis.push({ gridIndex: j, type: 'value', max: 100, interval: 25, axisLabel: { show: j === 0, formatter: '{value}%', color: MUTED }, splitLine: { lineStyle: { color: GRID } } });
+      series.push({ type: 'bar', xAxisIndex: j, yAxisIndex: j, barWidth: '70%', data: rows.map(r => ({ value: r[1], name: r[0][0], itemStyle: { color: r[0][1], borderRadius: [3, 3, 0, 0] } })),
+                    label: { show: true, position: 'top', fontSize: 12.5, color: INK } });
+    });
+    M.forEach(m => series.push({ name: m[0], type: 'bar', data: [], itemStyle: { color: m[1] }, xAxisIndex: 0, yAxisIndex: 0 }));   // legend entries
+    return { textStyle: { fontFamily: 'Source Sans 3, sans-serif', color: INK }, animationDuration: 700,
+      tooltip: { trigger: 'item', formatter: p => `${p.name}: <b>${p.value}%</b>` },
+      legend: { top: 0, selectedMode: false, itemWidth: 14, itemHeight: 10, textStyle: { color: MUTED, fontSize: 13 }, data: M.map(m => m[0]) },
+      title, grid, xAxis, yAxis, series };
+  },
+  'c-bu-models': () => base({ xAxis: xcat(MODELS), series: [
+    bar('Without BackUpper', [64.4, 11.2, 5.9, 4.4, 2.9, 2.4], C.gray), bar('With BackUpper', [100, 100, 100, 100, 100, 100], C.rmbr) ] }),
+  'c-bu-restore': () => base({ xAxis: xcat(['Terminal', 'SQL', 'Browser', 'Email', 'DevOps']), series: [
+    bar('No restore', [37.2, 10.1, 0.0, 0.0, 0.0], C.gray), bar('Restored by BackUpper', [94.7, 90.5, 88.9, 96.4, 92.4], C.rmbr) ] }),
+  'c-bu-pref': () => base({ xAxis: xcat(['High-Impact', 'Beyond-Request', 'Human-Work']), series: [
+    bar('Claude Opus-5', [89.8, 76.2, 90.7], C.owbr), bar('GPT 5.6-Sol', [95.7, 76.9, 94.0], C.mint), bar('DeepSeek V4-Pro', [84.1, 73.2, 80.3], C.blue) ] }),
+  'c-bu-gen': () => base({ xAxis: xcat(['GPT 5.6-Sol', 'Claude Opus-5']), series: [
+    bar('Without BackUpper', [23.1, 47.1], C.gray), bar('With BackUpper', [100, 100], C.rmbr) ] }),
+  'c-bu-self': () => base({ legend: { show: false }, yAxis: { ...base().yAxis, max: 40, interval: 10 },
+    xAxis: { ...xcat(['0', '5', '10', '20', '30']), name: 'tasks used for self-improvement', nameLocation: 'middle', nameGap: 28, nameTextStyle: { color: MUTED } },
+    series: [{ name: 'Rule coverage', type: 'line', data: [14.9, 21.6, 25.7, 29.4, 31.2], symbolSize: 9, lineStyle: { color: C.rmbr, width: 3 }, itemStyle: { color: C.rmbr }, areaStyle: { color: 'rgba(108,196,161,.18)' }, label: { ...LBL(12), formatter: '{c}%' } }] }),
+};
+const made = {};
+function draw(id) { const el = document.getElementById(id); if (!el || made[id] || !el.offsetWidth) return; made[id] = echarts.init(el); made[id].setOption(charts[id]()); }
+Object.keys(charts).forEach(draw);
+document.querySelectorAll('details.more').forEach(d => d.addEventListener('toggle', () => { if (d.open) d.querySelectorAll('.chart').forEach(c => { draw(c.id); made[c.id] && made[c.id].resize(); }); }));
+window.addEventListener('resize', () => Object.values(made).forEach(c => c.resize()));
+
 // ---------- a small stepper: nodes, progress line, autoplay loop; clicking jumps without restarting ----------
-function stepper(root, names, notes, render, hold = 3400) {
+function stepper(root, names, notes, render) {
   const note = root.querySelector('.note'), stepsEl = root.querySelector('.steps');
+  const prev = root.querySelector('.prev'), next = root.querySelector('.next');
   const fill = document.createElement('div'); fill.className = 'fill'; stepsEl.appendChild(fill);
-  const btns = names.map((n, i) => { const b = document.createElement('button'); b.className = 'step'; b.innerHTML = `<span></span>${n}`; b.onclick = () => show(i); stepsEl.appendChild(b); return b; });
-  let cur = 0, timer = null;
+  const btns = names.map((n, i) => { const b = document.createElement('button'); b.className = 'step'; b.innerHTML = `<span></span>${n}`; b.onclick = () => show(i, true); stepsEl.appendChild(b); return b; });
+  let cur = 0;
   function show(i, fresh = false) {
     cur = i;
     btns.forEach((b, k) => { b.classList.toggle('on', k <= i); b.classList.toggle('cur', k === i); });
     fill.style.width = Math.max(0, btns[i].offsetLeft + btns[i].offsetWidth / 2 - btns[0].offsetLeft - 9) + 'px';
     note.innerHTML = notes[i];
     render(i, fresh);
-    clearTimeout(timer);
-    timer = setTimeout(() => show((cur + 1) % names.length, true), hold + (cur === names.length - 1 ? 1800 : 0));
+    prev.disabled = i === 0;
+    next.textContent = i === names.length - 1 ? '↻ Start over' : 'Next →';
   }
-  root.querySelector('.replay').onclick = () => show(0, true);
+  prev.onclick = () => cur > 0 && show(cur - 1, true);
+  next.onclick = () => show(cur === names.length - 1 ? 0 : cur + 1, true);
   show(0, true);
+}
+// the last step of each demo swaps the diagram for the main result chart
+function resultStep(root, on, chartId) {
+  root.querySelector('.canvas').hidden = on;
+  const pane = root.querySelector('.respane'); pane.hidden = !on;
+  if (on) { draw(chartId); made[chartId] && made[chartId].resize(); pane.classList.remove('pop'); void pane.offsetWidth; pane.classList.add('pop'); }
 }
 
 // ---------- RegretBench: how a task is built (cumulative: each step adds a piece) ----------
@@ -381,16 +464,17 @@ function stepper(root, names, notes, render, hold = 3400) {
   const root = document.getElementById('rb-stage');
   const parts = [...root.querySelectorAll('[data-s]')];
   stepper(root,
-    ['Collect', 'Extract', 'Build', 'Evaluate'],
+    ['Collect', 'Extract', 'Build', 'Evaluate', 'Results'],
     ['Start from a <b>real regret moment</b>: 205 of them, from X.com, GitHub, Stack Overflow and news reports.',
      'Pull out the <b>action</b> that caused the loss, the <b>state</b> that was lost, and what the user <b>needed</b> back.',
      'Rebuild it as an <b>executable multi-turn task</b> in a real environment, with the lost state placed outside the harness\'s own backups.',
-     'Run the agent. A task judge checks it <b>finished</b>; a backup judge checks it <b>backed up before the regret moment</b>.'],
-    (i, fresh) => parts.forEach(p => {
+     'Run the agent. A task judge checks it <b>finished</b>; a backup judge checks it <b>backed up before the regret moment</b>.',
+     'Across all 205 tasks and six frontier models.'],
+    (i, fresh) => { resultStep(root, i === 4, 'c-rb-main'); if (i === 4) return; parts.forEach(p => {
       const s = +p.dataset.s, was = !p.classList.contains('hidden');
       p.classList.toggle('hidden', s > i);
       if (s === i && (fresh || !was)) { p.classList.remove('pop'); void p.offsetWidth; p.classList.add('pop'); }
-    }));
+    }); });
 })();
 
 // ---------- BackUpper: one call per step through the router; the backup log accumulates ----------
@@ -412,14 +496,16 @@ function stepper(root, names, notes, render, hold = 3400) {
     { name: 'Restore', cmd: '“I want my old dependencies back!”', restore: true,
       out: '<b>BackUpper restore</b> → <span class="mono">pip install -r reqs.txt</span><br>✓ 27 packages back to their old versions' },
   ];
-  stepper(root, CALLS.map(c => c.name),
+  stepper(root, CALLS.map(c => c.name).concat('Results'),
     ['Every call is checked first. <b>Read-only</b> calls pass with no cost.',
      '<b>Tier 1</b> rewrites a destructive command into a reversible one.',
      '<b>Tier 2</b> pairs a command with the backup that undoes it.',
      '<b>Tier 3</b> snapshots edits inside the workspace.',
      'Anything else: an <b>LLM checker</b> spots that it changes state, and a <b>lightweight subagent</b> backs it up.',
-     'Every backup is <b>logged with how to restore it</b>, however many actions ago.'],
+     'Every backup is <b>logged with how to restore it</b>, however many actions ago.',
+     'Against other ways of keeping agent actions reversible, on all 205 tasks.'],
     (i, fresh) => {
+      resultStep(root, i === CALLS.length, 'c-bu-main'); if (i === CALLS.length) return;
       const c = CALLS[i];
       cmd.textContent = c.cmd;
       out.innerHTML = c.out; out.style.background = c.restore ? 'var(--mint-bg)' : (c.cls === 'sub' ? 'var(--lav-bg)' : c.cls === 'pass' ? '#F3EEE3' : 'var(--mint-bg)');
@@ -437,57 +523,6 @@ function stepper(root, names, notes, render, hold = 3400) {
     });
 })();
 
-// ---------- charts (numbers from the paper) ----------
-const INK = '#2B2B2B', MUTED = '#6B6558', GRID = '#EDE7DA';
-const C = { pass: '#F2C14E', owbr: '#E58A62', rmbr: '#2E8A62', mint: '#6CC4A1', lav: '#9C87E0', gray: '#B8B0A2', blue: '#8EA6E0' };
-const MODELS = ['Claude\nOpus-5', 'Claude\nSonnet-5', 'GPT\n5.6-Sol', 'GPT\n5.6-Terra', 'DeepSeek\nV4-Pro', 'Gemini\n3.7-Flash'];
-const base = (o = {}) => ({ textStyle: { fontFamily: 'Source Sans 3, sans-serif', color: INK }, animationDuration: 700,
-  tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, valueFormatter: v => (v == null ? '–' : v + '%') },
-  legend: { top: 0, itemWidth: 14, itemHeight: 10, textStyle: { color: MUTED, fontSize: 13 } },
-  grid: { left: 46, right: 12, top: 44, bottom: 46 },
-  yAxis: { type: 'value', max: 100, interval: 25, axisLabel: { formatter: '{value}%', color: MUTED }, splitLine: { lineStyle: { color: GRID } } }, ...o });
-const xcat = data => ({ type: 'category', data, axisLabel: { color: INK, interval: 0, lineHeight: 15, fontSize: 13 }, axisTick: { show: false }, axisLine: { lineStyle: { color: '#D8D0BF' } } });
-const LBL = (fs = 11) => ({ show: true, position: 'top', fontSize: fs, color: INK, formatter: p => (p.value == null ? '' : p.value) });
-const bar = (name, data, color, o = {}) => ({ name, type: 'bar', data, barGap: '18%', label: LBL(), itemStyle: { color, borderRadius: [3, 3, 0, 0] }, emphasis: { focus: 'series' }, ...o });
-const charts = {
-  'c-rb-main': () => base({ xAxis: xcat(MODELS), series: [
-    bar('Task pass rate', [92.2, 82.0, 90.7, 85.9, 81.5, 84.4], C.pass, { label: LBL(10) }),
-    bar('OWBR', [41.6, 25.1, 12.5, 9.1, 8.3, 7.5], C.owbr, { label: LBL(10) }),
-    bar('RMBR', [64.4, 11.2, 5.9, 4.4, 2.9, 2.4], C.rmbr, { label: LBL(10) }) ] }),
-  'c-rb-cap': () => base({ tooltip: { trigger: 'axis' }, grid: { left: 40, right: 46, top: 44, bottom: 30 },
-    yAxis: [{ type: 'value', name: 'AA index', max: 60, axisLabel: { color: MUTED }, splitLine: { lineStyle: { color: GRID } } },
-            { type: 'value', name: 'RMBR', max: 100, axisLabel: { formatter: '{value}%', color: MUTED }, splitLine: { show: false } }],
-    xAxis: xcat(['GPT 5.4', 'GPT 5.5', 'GPT 5.6-Sol']),
-    series: [bar('Intelligence index', [39, 42, 47], C.gray), { name: 'RMBR', type: 'line', yAxisIndex: 1, data: [6.7, 5.0, 5.0], symbolSize: 9, lineStyle: { color: C.rmbr, width: 3 }, itemStyle: { color: C.rmbr }, label: { ...LBL(), formatter: '{c}%', color: C.rmbr } }] }),
-  'c-rb-harness': () => base({ xAxis: xcat(['Claude\nOpus-5', 'GPT\n5.6-Sol', 'DeepSeek\nV4-Pro']), series: [
-    bar('Claude Code', [70.0, 8.3, 1.7], C.owbr), bar('Codex', [73.3, 5.0, 0.0], C.mint), bar('Hermes', [68.3, 5.0, 1.7], C.blue) ] }),
-  'c-rb-tool': () => base({ legend: { show: false }, yAxis: { ...base().yAxis, max: 40, interval: 10 }, xAxis: xcat(['Terminal', 'SQL', 'Browser', 'Email', 'DevOps']),
-    series: [bar('RMBR', [13.6, 12.7, 15.7, 20.8, 20.0], C.rmbr, { barWidth: '42%', label: { ...LBL(12), formatter: '{c}%' } })] }),
-  'c-bu-main': () => base({ legend: { top: 0, itemWidth: 14, itemHeight: 10, textStyle: { color: MUTED, fontSize: 12.5 } }, grid: { left: 46, right: 12, top: 62, bottom: 34 },
-    xAxis: xcat(['RMBR', 'OWBR', 'State similarity']), series: [
-      bar('BackUpper', [100, 100, 92.2], C.rmbr),
-      bar('Skill-Based', [81.4, 80.5, 71.1], C.pass),
-      bar('BackUpper w/o experience', [77.6, 73.2, 68.7], C.mint),
-      bar('Post-hoc Recovery', [null, null, 47.4], C.lav),
-      bar('No backup support', [15.2, 17.4, 25.6], C.gray),
-      bar('Destructive Command Guard', [8.1, 7.3, 20.3], C.owbr) ] }),
-  'c-bu-models': () => base({ xAxis: xcat(MODELS), series: [
-    bar('Without BackUpper', [64.4, 11.2, 5.9, 4.4, 2.9, 2.4], C.gray), bar('With BackUpper', [100, 100, 100, 100, 100, 100], C.rmbr) ] }),
-  'c-bu-restore': () => base({ xAxis: xcat(['Terminal', 'SQL', 'Browser', 'Email', 'DevOps']), series: [
-    bar('No restore', [37.2, 10.1, 0.0, 0.0, 0.0], C.gray), bar('Restored by BackUpper', [94.7, 90.5, 88.9, 96.4, 92.4], C.rmbr) ] }),
-  'c-bu-pref': () => base({ xAxis: xcat(['High-Impact', 'Beyond-Request', 'Human-Work']), series: [
-    bar('Claude Opus-5', [89.8, 76.2, 90.7], C.owbr), bar('GPT 5.6-Sol', [95.7, 76.9, 94.0], C.mint), bar('DeepSeek V4-Pro', [84.1, 73.2, 80.3], C.blue) ] }),
-  'c-bu-gen': () => base({ xAxis: xcat(['GPT 5.6-Sol', 'Claude Opus-5']), series: [
-    bar('Without BackUpper', [23.1, 47.1], C.gray), bar('With BackUpper', [100, 100], C.rmbr) ] }),
-  'c-bu-self': () => base({ legend: { show: false }, yAxis: { ...base().yAxis, max: 40, interval: 10 },
-    xAxis: { ...xcat(['0', '5', '10', '20', '30']), name: 'tasks used for self-improvement', nameLocation: 'middle', nameGap: 28, nameTextStyle: { color: MUTED } },
-    series: [{ name: 'Rule coverage', type: 'line', data: [14.9, 21.6, 25.7, 29.4, 31.2], symbolSize: 9, lineStyle: { color: C.rmbr, width: 3 }, itemStyle: { color: C.rmbr }, areaStyle: { color: 'rgba(108,196,161,.18)' }, label: { ...LBL(12), formatter: '{c}%' } }] }),
-};
-const made = {};
-function draw(id) { const el = document.getElementById(id); if (!el || made[id] || !el.offsetWidth) return; made[id] = echarts.init(el); made[id].setOption(charts[id]()); }
-Object.keys(charts).forEach(draw);
-document.querySelectorAll('details.more').forEach(d => d.addEventListener('toggle', () => { if (d.open) d.querySelectorAll('.chart').forEach(c => { draw(c.id); made[c.id] && made[c.id].resize(); }); }));
-window.addEventListener('resize', () => Object.values(made).forEach(c => c.resize()));
 </script>
 </body>
 </html>
