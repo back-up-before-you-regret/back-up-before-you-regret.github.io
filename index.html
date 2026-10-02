@@ -50,12 +50,25 @@
   .tldr h3 { margin: 0 0 8px; font-size: 15px; letter-spacing: .08em; color: var(--accent); }
   .tldr p { margin: 0 0 8px; } .tldr p:last-child { margin: 0; }
   /* figure */
-  figure { margin: 30px 0 0; }
+  figure { margin: 30px 0 52px; }
   figure video { width: 100%; display: block; border: 1px solid var(--line); border-radius: 6px; background: #F3EEE3; }
   figcaption { color: var(--muted); font-size: 14px; line-height: 1.5; margin-top: 10px; }
   figcaption b { color: var(--ink); }
 
   section { margin-top: 54px; }
+  /* full-width alternating bands (background bleeds past the column) */
+  body { overflow-x: hidden; }
+  section.band { margin-top: 0; padding: 52px 0 56px; box-shadow: 0 0 0 100vmax var(--bandc); clip-path: inset(0 -100vmax); background: var(--bandc); }
+  section.band + section.band { border-top: 1px solid var(--line); }
+  .b-regret { --bandc: #FCEFE7; }
+  .b-backup { --bandc: #E9F5EE; }
+  .b-white  { --bandc: #FFFFFF; }
+  .b-cream  { --bandc: #FBF8F1; }
+  .eyebrow { display: inline-block; font: 700 13px "IBM Plex Mono", monospace; letter-spacing: .12em; text-transform: uppercase; padding: 2px 10px; border-radius: 999px; margin-bottom: 10px; }
+  .b-regret .eyebrow { background: #F6D3C2; color: #A2482A; }
+  .b-backup .eyebrow { background: #C9EBD9; color: #1F6B4A; }
+  .b-regret h2 .acc2 { color: #C2552F; }
+  .b-backup h2 .acc2 { color: var(--accent); }
   h2 { font-size: 27px; margin: 0 0 14px; line-height: 1.25; }
   h2.center { text-align: center; }
   .abstract { max-width: 700px; margin: 0 auto; line-height: 1.8; }
@@ -120,7 +133,7 @@
   h2 .acc { color: var(--accent); }
 
   pre.bib { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 16px 18px; font: 13.5px/1.7 "IBM Plex Mono", monospace; overflow-x: auto; margin: 0; }
-  footer { margin: 60px 0 40px; padding-top: 22px; border-top: 1px solid var(--line); text-align: center; color: var(--faint); font-size: 14px; }
+  footer { margin: 0 0 40px; padding-top: 22px; border-top: 1px solid var(--line); text-align: center; color: var(--faint); font-size: 14px; }
 
   @media (max-width: 720px) {
     body { font-size: 16px; }
@@ -178,8 +191,9 @@
     <figcaption><b>Figure 1.</b> One <code>pip install -U numpy</code> silently changes 27 packages; 100+ actions later the old environment is gone. With BackUpper, the same call is caught, the environment is backed up first, and it restores in one step.</figcaption>
   </figure>
 
-  <section id="regretbench">
-    <h2>RegretBench: do agents back up before you regret?</h2>
+  <section id="regretbench" class="band b-regret">
+    <div class="eyebrow">01 · The problem</div>
+    <h2><span class="acc2">RegretBench</span>: do agents back up before you regret?</h2>
     <p>Each task is built from a real <b>regret moment</b>: someone let an action change state they later needed, and could not get it back. The agent finishes the task; the question is whether it kept a way back.</p>
     <div class="stage" data-stepper="regret">
       <div class="term"><div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><pre></pre><div class="callout"></div><div class="stamp"></div></div>
@@ -203,8 +217,9 @@
     </div>
   </section>
 
-  <section id="backupper">
-    <h2>BackUpper: back up before every tool call</h2>
+  <section id="backupper" class="band b-backup">
+    <div class="eyebrow">02 · The fix</div>
+    <h2><span class="acc2">BackUpper</span>: back up before every tool call</h2>
     <p>BackUpper sits on the harness's pre-tool-call hook. It <b>intercepts</b> each call, <b>backs up</b> the state the call will change, then lets the call <b>run</b>. When you regret it, you <b>restore</b>.</p>
     <div class="stage" data-stepper="backup">
       <div class="term"><div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><pre></pre><div class="callout"></div><div class="stamp"></div></div>
@@ -233,7 +248,8 @@
     </div>
   </section>
 
-  <section id="try">
+  <section id="try" class="band b-white">
+    <div class="eyebrow" style="background:#EEE8DC;color:#6B6558">03 · Try it</div>
     <h2>Try it yourself: <span class="acc">plug it into your agent</span></h2>
     <div class="try">
       <div>
@@ -253,7 +269,7 @@
     </div>
   </section>
 
-  <section id="bibtex">
+  <section id="bibtex" class="band b-cream">
     <h2>BibTeX</h2>
 <pre class="bib">@article{li2026backup,
   title   = {Back Up Before You Regret: Measuring Backup Awareness
