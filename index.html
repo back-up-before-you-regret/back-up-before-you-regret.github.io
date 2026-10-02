@@ -239,7 +239,7 @@
   <section id="regretbench" class="band cream">
     <div class="eyebrow">01 · Benchmark</div>
     <h2><span class="acc">RegretBench</span>: built from real regret moments</h2>
-    <p>Each task starts from a real report of someone losing state they later needed. We extract what went wrong, rebuild it as an executable multi-turn task, and check whether the agent backs up before the step the user regretted.</p>
+    <p>Each task is built from a real-world <b>regret moment</b>, where a user explicitly reported losing state they later needed and regretted not backing it up. We pair it with a real environment and a real multi-turn conversation to build an executable task. We then measure three things: whether the agent <b>completes the task</b> (Pass Rate), whether it <b>backs up before the regret moment</b> (RMBR), and how often it <b>backs up anything outside the workspace</b> (OWBR). Since harnesses already snapshot the workspace, we only count backups beyond it.</p>
     <div class="stage" id="rb-stage">
       <div class="canvas">
         <div class="pipe">
@@ -294,7 +294,7 @@
   <section id="backupper" class="band white">
     <div class="eyebrow">02 · Method</div>
     <h2><span class="acc">BackUpper</span>: check every tool call before it runs</h2>
-    <p>BackUpper sits on the harness's pre-tool-call hook. Each call is routed through a few cheap checks; the first that matches backs up the state the call will change, then the call runs. Everything is logged so you can restore later.</p>
+    <p>Because it is hard to predict which changes will be regretted, BackUpper <b>checks every tool call</b> on the harness's pre-tool-call hook, before it runs. Read-only calls pass straight through. Common operations get a <b>rule-based backup</b>: rewriting the command (<code>rm</code> → move to trash), pairing it with a backup (<code>pip freeze</code> before <code>pip install</code>), or snapshotting workspace edits. Anything else goes to an LLM checker and a <b>lightweight subagent</b> that inspects the call and backs up what it will change. Users can <b>customize</b> what gets backed up in plain words, and every backup is logged with a command to restore it. We measure backup coverage (RMBR, OWBR) and how close the restored state is to the original (<b>state similarity</b>).</p>
     <div class="stage" id="bu-stage">
       <div class="canvas">
         <div class="flow">
