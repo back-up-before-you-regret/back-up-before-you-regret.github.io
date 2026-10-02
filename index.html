@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Back Up Before You Regret</title>
+<meta name="description" content="RegretBench measures whether coding agents back up state before changing it; BackUpper is a plug-in backup layer that keeps agent actions reversible.">
+<link rel="icon" type="image/svg+xml" href="assets/crab.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F3EEE3; --card: #FFFDF7; --ink: #2B2B2B; --muted: #6B6558;
+    --mint: #6CC4A1; --mint-soft: #DDF3E8; --coral: #E58A62; --butter: #FFD166; --lav: #B9A6F0;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.6 Inter, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+  a { color: inherit; }
+  code, pre { font-family: "JetBrains Mono", ui-monospace, Menlo, monospace; }
+
+  /* header */
+  header { text-align: center; padding: 56px 0 24px; }
+  .logo { width: 108px; height: auto; }
+  h1 { font-size: clamp(30px, 5.4vw, 52px); line-height: 1.12; margin: 10px 0 8px; font-weight: 800; letter-spacing: -.02em; }
+  .subtitle { font-size: clamp(16px, 2.4vw, 21px); color: var(--muted); margin: 0 0 20px; }
+  .subtitle b { color: var(--ink); }
+  .authors { font-size: 17px; margin: 0 0 4px; }
+  .authors span { white-space: nowrap; margin: 0 6px; display: inline-block; }
+  .affil { font-size: 15px; color: var(--muted); margin: 0 0 22px; }
+  .affil span { white-space: nowrap; margin: 0 8px; display: inline-block; }
+  .buttons { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 18px; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 9px 18px; border: 3px solid var(--ink); border-radius: 999px;
+         background: var(--card); font-weight: 600; text-decoration: none; box-shadow: 4px 4px 0 var(--ink); transition: transform .1s, box-shadow .1s; }
+  .btn:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--ink); }
+  .btn svg { width: 18px; height: 18px; }
+  .works { font-size: 15px; color: var(--muted); }
+  .chip { display: inline-block; padding: 2px 12px; margin: 3px 3px; border: 2px solid var(--ink); border-radius: 999px; background: var(--card); color: var(--ink); font-weight: 600; font-size: 14px; }
+
+  /* sections */
+  section { padding: 34px 0; }
+  h2 { font-size: clamp(24px, 3.6vw, 32px); margin: 0 0 14px; font-weight: 800; letter-spacing: -.01em; }
+  h2 .tag { font-size: .55em; vertical-align: middle; padding: 2px 10px; border-radius: 8px; border: 2px solid var(--ink); margin-left: 8px; font-weight: 700; }
+  h3 { font-size: 20px; margin: 26px 0 8px; }
+  p { margin: 0 0 14px; }
+  .lead { font-size: 19px; }
+  .card { background: var(--card); border: 3px solid var(--ink); border-radius: 18px; box-shadow: 6px 6px 0 var(--ink); padding: 22px 26px; }
+  .video { width: 100%; display: block; border-radius: 14px; border: 3px solid var(--ink); box-shadow: 6px 6px 0 var(--ink); background: #000; }
+  figure { margin: 18px 0 8px; }
+  figure img { width: 100%; height: auto; display: block; background: #fff; border-radius: 12px; border: 2px solid #d9d2c3; }
+  figcaption { font-size: 14.5px; color: var(--muted); margin-top: 8px; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 720px) { .two { grid-template-columns: 1fr; } }
+
+  /* stats */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 18px 0; }
+  @media (max-width: 720px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+  .stat { background: var(--card); border: 3px solid var(--ink); border-radius: 16px; padding: 14px 12px; text-align: center; box-shadow: 4px 4px 0 var(--ink); }
+  .stat b { display: block; font-size: 30px; line-height: 1.1; font-weight: 800; }
+  .stat span { font-size: 14px; color: var(--muted); }
+  .stat.coral { background: #FBE3D7; } .stat.mint { background: var(--mint-soft); } .stat.butter { background: #FFF1C9; }
+
+  .tldr { background: var(--butter); }
+  .tldr p { margin: 0; }
+  .finding { border-left: 6px solid var(--coral); background: var(--card); padding: 12px 16px; border-radius: 0 12px 12px 0; margin: 14px 0; }
+
+  /* tiers */
+  .tiers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 16px 0; }
+  @media (max-width: 820px) { .tiers { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 440px) { .tiers { grid-template-columns: 1fr; } }
+  .tier { background: var(--card); border: 3px solid var(--ink); border-radius: 14px; padding: 12px 14px; }
+  .tier .n { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .tier h4 { margin: 2px 0 6px; font-size: 17px; }
+  .tier p { font-size: 14.5px; margin: 0; }
+  .tier code { font-size: 13px; background: #F3EEE3; padding: 1px 5px; border-radius: 5px; white-space: nowrap; }
+  .tier.rule { border-top: 10px solid var(--butter); } .tier.snap { border-top: 10px solid var(--mint); } .tier.sub { border-top: 10px solid var(--lav); }
+
+  pre { background: #1F1C19; color: #EDE6D6; padding: 16px 18px; border-radius: 14px; border: 3px solid var(--ink); overflow-x: auto; font-size: 14.5px; margin: 0 0 12px; }
+  pre .c { color: #9A9184; }
+  .todo { background: #FFE3DA; border: 2px dashed var(--coral); padding: 1px 6px; border-radius: 6px; font-size: .85em; }
+
+  .bib { position: relative; }
+  .copy { position: absolute; top: 10px; right: 10px; background: var(--card); color: var(--ink); border: 2px solid var(--ink); border-radius: 8px; padding: 3px 10px; font: 600 13px Inter, sans-serif; cursor: pointer; }
+
+  footer { text-align: center; color: var(--muted); font-size: 14px; padding: 36px 0 48px; }
+  footer img { width: 40px; vertical-align: middle; }
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <img class="logo" src="assets/crab.svg" alt="BackUpper hermit crab mascot">
+  <h1>Back Up Before You Regret</h1>
+  <p class="subtitle">Measuring Backup Awareness and Automating Backup in Coding Agents<br>
+    <b>RegretBench</b> · <b>BackUpper</b></p>
+  <p class="authors">
+    <span>Xu Li<sup>1</sup></span><span>Simon Yu<sup>1</sup></span><span>Minzhou Pan<sup>1</sup></span><span>Yiyou Sun<sup>2</sup></span><span>Zhaorun Chen<sup>3</sup></span><span>Bo Li<sup>4</sup></span><span>Weiyan Shi<sup>1</sup></span>
+  </p>
+  <p class="affil">
+    <span><sup>1</sup>Northeastern University</span><span><sup>2</sup>UC Berkeley</span><span><sup>3</sup>University of Chicago</span><span><sup>4</sup>UIUC</span>
+  </p>
+  <div class="buttons">
+    <!-- TODO: replace href="#" with the real links -->
+    <a class="btn" href="#" title="TODO: arXiv link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h6"/></svg>Paper</a>
+    <a class="btn" href="#" title="TODO: GitHub repo">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.38-3.88-1.38-.53-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.27 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>Code</a>
+    <a class="btn" href="#video">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Video</a>
+    <a class="btn" href="#bibtex">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M10 7H6a2 2 0 0 0-2 2v4h6V7zM20 7h-4a2 2 0 0 0-2 2v4h6V7zM4 13c0 3 1 4 3 5M14 13c0 3 1 4 3 5"/></svg>BibTeX</a>
+  </div>
+  <div class="works">tested with <span class="chip">Claude Code</span><span class="chip">Codex</span><span class="chip">Hermes</span></div>
+</header>
+
+<main class="wrap">
+
+  <section id="video" style="padding-top:10px">
+    <video class="video" src="assets/promo.mp4" autoplay muted loop playsinline controls preload="metadata"></video>
+  </section>
+
+  <section style="padding-top:6px">
+    <div class="card tldr">
+      <p class="lead"><b>TL;DR</b> Coding agents finish the task but rarely back up the state they change. <b>RegretBench</b> measures this on 205 real-world regret moments; <b>BackUpper</b> is a plug-in that checks every tool call and backs up affected state <i>before</i> it runs.</p>
+    </div>
+  </section>
+
+  <section id="abstract">
+    <h2>Abstract</h2>
+    <p>Coding agents now complete tasks autonomously, modifying real-world state such as artifacts, software environments, and configurations along the way. Yet they show limited backup awareness: recognizing that an action will modify state that may later be needed, and preserving it beforehand. To evaluate backup awareness, we introduce RegretBench: 205 executable tasks grounded in regret moments reported on platforms such as X.com, GitHub, and Stack Overflow, where users regretted not preserving state they later needed. Across six frontier models, agents complete 86.1% of tasks on average yet back up before these moments in only 15.2%, showing that task completion does not imply backup awareness. Because it is hard to predict which changes will be regretted, we propose BackUpper, a harness plug-in backup layer that checks every tool call and preserves affected state before modification. It combines rule-based strategies for common destructive operations with a lightweight subagent for complex cases. BackUpper's restored state reaches 92.2% average similarity to the original, and every regret-moment action is covered. Achieving this costs only $0.014 per task, with 7× fewer tokens than main-agent self-backup. When users state backup preferences, BackUpper narrows the backup scope and achieves 84.5% F1. It can also add new rule-based strategies through self-improvement to reduce subagent calls over time. These results show that agents can keep actions reversible at low cost while respecting users' preferences.</p>
+    <figure>
+      <img src="assets/teaser.png" alt="Overview of RegretBench and BackUpper" loading="lazy">
+      <figcaption>Agents act on real-world state without preserving it, leaving users regretting the loss. RegretBench measures whether agents back up first; BackUpper intercepts every tool call and backs up affected state.</figcaption>
+    </figure>
+  </section>
+
+  <section id="regretbench">
+    <h2>RegretBench <span class="tag" style="background:#FBE3D7">benchmark</span></h2>
+    <p>A <b>regret moment</b> is a real report of a user losing state they later needed — an upgraded environment, a dropped table, a deleted folder — after an action that seemed fine at the time. We turn each one into an executable multi-turn task, placing the affected state outside native harness backups.</p>
+    <div class="stats">
+      <div class="stat"><b>205</b><span>executable tasks</span></div>
+      <div class="stat"><b>5</b><span>tools: Terminal, SQL, Browser, Email, DevOps</span></div>
+      <div class="stat"><b>3</b><span>source categories</span></div>
+      <div class="stat"><b>6</b><span>frontier models evaluated</span></div>
+    </div>
+    <figure>
+      <img src="assets/construction.png" alt="RegretBench task construction pipeline" loading="lazy">
+      <figcaption>Each documented regret moment is paired with a real environment and interaction trajectory to form an executable task.</figcaption>
+    </figure>
+
+    <h3>Finding: task completion ≠ backup awareness</h3>
+    <div class="stats" style="grid-template-columns:repeat(2,1fr)">
+      <div class="stat butter"><b>86.1%</b><span>tasks completed (average)</span></div>
+      <div class="stat coral"><b>15.2%</b><span>backed up before the regret moment (RMBR)</span></div>
+    </div>
+    <div class="two">
+      <figure>
+        <img src="assets/results_backup_rate.png" alt="Task pass rate and RMBR across six models" loading="lazy">
+        <figcaption>Agents complete most tasks but rarely back up: all six models pass 81.5–92.2% of tasks, yet RMBR averages only 15.2%.</figcaption>
+      </figure>
+      <figure>
+        <img src="assets/sources.png" alt="Regret moment sources" loading="lazy">
+        <figcaption>Regret moments come from Social &amp; Community (39.0%), Creation &amp; Productivity (44.4%), and Records &amp; Media (16.6%).</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="backupper">
+    <h2>BackUpper <span class="tag" style="background:var(--mint-soft)">method</span></h2>
+    <p>Because it is hard to predict which changes will be regretted, BackUpper does not try to: it checks <b>every</b> tool call through a pre-tool-call hook and applies the first matching tier. Common operations are handled by rules without any LLM call; only the rest go to a lightweight subagent.</p>
+    <div class="tiers">
+      <div class="tier rule"><div class="n">Tier 1 · rule</div><h4>Command rewriting</h4><p>Run a reversible alternative, e.g. <code>rm x</code> → <code>mv x .trash/</code>.</p></div>
+      <div class="tier rule"><div class="n">Tier 2 · rule</div><h4>Command pairing</h4><p>Back up first, e.g. <code>pip freeze</code> before <code>pip install</code>.</p></div>
+      <div class="tier snap"><div class="n">Tier 3</div><h4>Snapshot</h4><p>Shadow snapshot of workspace or native-tool changes.</p></div>
+      <div class="tier sub"><div class="n">Tier 4</div><h4>Backup subagent</h4><p>Inspects calls rules can't judge, e.g. <code>bash run.sh</code>, and backs up what they touch.</p></div>
+    </div>
+    <figure>
+      <img src="assets/method.png" alt="BackUpper architecture" loading="lazy">
+      <figcaption>BackUpper intercepts every tool call. Predefined rules trigger command rewriting (Tier 1) or pairing (Tier 2); workspace changes trigger snapshots (Tier 3); remaining calls go through a read-only checker and, if needed, a backup subagent (Tier 4).</figcaption>
+    </figure>
+    <p><b>Full vs. personalized modes.</b> By default (Full mode) BackUpper backs up every non-read-only call. Users can narrow the scope with natural-language preferences — e.g. only high-impact changes, only changes beyond the request, or only human-authored work.</p>
+
+    <h3>Results</h3>
+    <div class="stats">
+      <div class="stat mint"><b>100%</b><span>regret-moment actions covered</span></div>
+      <div class="stat mint"><b>92.2%</b><span>restored-state similarity (vs. 14.3% without)</span></div>
+      <div class="stat mint"><b>$0.014</b><span>per task · 7× fewer tokens than main-agent self-backup</span></div>
+      <div class="stat mint"><b>84.5%</b><span>F1 when following user preferences</span></div>
+    </div>
+    <div class="two">
+      <figure>
+        <img src="assets/results_backupper.png" alt="Backup rates with BackUpper" loading="lazy">
+        <figcaption>Solid bars: agents alone. Dark green dashed: restored-state similarity with BackUpper. Light green dotted: OWBR with BackUpper, which covers every case.</figcaption>
+      </figure>
+      <figure>
+        <img src="assets/results_baselines.png" alt="Comparison with baselines" loading="lazy">
+        <figcaption>Against baselines on all 205 tasks: the strongest, Skill-Based, reaches only 81.4% RMBR.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="quickstart">
+    <h2>Quick start</h2>
+    <p class="todo" style="display:inline-block">TODO: confirm package name and commands before release</p>
+    <pre><span class="c"># install the plug-in</span>
+npm install -g agents-backupper
+
+<span class="c"># then use your coding agent as usual — BackUpper checks every tool call first</span>
+claude</pre>
+  </section>
+
+  <section id="bibtex">
+    <h2>BibTeX</h2>
+    <div class="bib">
+      <button class="copy" onclick="navigator.clipboard && navigator.clipboard.writeText(document.getElementById('bibtext').innerText).then(() => { this.textContent = 'Copied'; setTimeout(() => this.textContent = 'Copy', 1500); }).catch(() => {})">Copy</button>
+<pre id="bibtext">@article{li2026backup,
+  title   = {Back Up Before You Regret: Measuring Backup Awareness and Automating Backup in Coding Agents},
+  author  = {Li, Xu and Yu, Simon and Pan, Minzhou and Sun, Yiyou and Chen, Zhaorun and Li, Bo and Shi, Weiyan},
+  journal = {arXiv preprint arXiv:XXXX.XXXXX},
+  year    = {2026}
+}</pre>
+    </div>
+  </section>
+
+</main>
+
+<footer class="wrap">
+  <img src="assets/crab.svg" alt=""> RegretBench · BackUpper · 2026
+</footer>
+
+</body>
+</html>
