@@ -6,6 +6,7 @@
 <title>Back Up Before You Regret</title>
 <meta name="description" content="RegretBench measures whether coding agents back up before they act; BackUpper is a plug-in that backs up affected state before every tool call.">
 <link rel="icon" href="assets/crab.svg">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
@@ -81,6 +82,36 @@
   .step.cur { font-weight: 600; }
   .replay { display: block; margin: 16px 0 0 auto; background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 4px 14px; font: 13px "IBM Plex Mono", monospace; color: var(--muted); cursor: pointer; }
 
+  /* step callouts + key line */
+  .stage .term { position: relative; }
+  .callout { position: absolute; top: 12px; right: 14px; padding: 4px 14px; border-radius: 999px; font: 700 15px "Source Sans 3", sans-serif; color: #1F1C19; opacity: 0; transform: scale(.6); transition: opacity .25s, transform .3s cubic-bezier(.3,1.6,.5,1); }
+  .callout.show { opacity: 1; transform: scale(1); }
+  .stamp { position: absolute; left: 50%; top: 52%; transform: translate(-50%,-50%) rotate(-6deg) scale(2.2); opacity: 0; pointer-events: none;
+           font: 900 52px "Source Sans 3", sans-serif; letter-spacing: .04em; padding: 2px 22px; border: 6px solid; border-radius: 14px; background: rgba(31,28,25,.82); transition: transform .35s cubic-bezier(.3,1.5,.5,1), opacity .2s; white-space: nowrap; }
+  .stamp.show { opacity: 1; transform: translate(-50%,-50%) rotate(-6deg) scale(1); }
+  .stamp small { display: block; font: 600 17px "Source Sans 3", sans-serif; letter-spacing: 0; text-align: center; margin: -4px 0 6px; }
+  .key { background: rgba(255,209,102,.16); border-radius: 4px; box-shadow: -6px 0 0 rgba(255,209,102,.16), 6px 0 0 rgba(255,209,102,.16); }
+  .key.good { background: rgba(108,196,161,.18); box-shadow: -6px 0 0 rgba(108,196,161,.18), 6px 0 0 rgba(108,196,161,.18); }
+  .key.bad { background: rgba(255,123,114,.18); box-shadow: -6px 0 0 rgba(255,123,114,.18), 6px 0 0 rgba(255,123,114,.18); }
+
+  /* results */
+  .result { margin-top: 26px; }
+  .result h3 { font-size: 20px; margin: 0 0 6px; }
+  .result .lead { margin: 0 0 6px; }
+  .chart { width: 100%; height: 360px; }
+  .chart.sm { height: 300px; }
+  .cap { color: var(--muted); font-size: 14px; text-align: center; margin: 2px 0 0; }
+  .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 16px 0 4px; }
+  .cards div { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; text-align: center; }
+  .cards b { display: block; font-size: 24px; color: var(--accent); line-height: 1.2; }
+  .cards span { font-size: 13.5px; color: var(--muted); }
+  details.more { margin-top: 14px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+  details.more > summary { cursor: pointer; padding: 12px 16px; font-weight: 600; color: var(--accent); list-style: none; }
+  details.more > summary::before { content: "▸ "; } details.more[open] > summary::before { content: "▾ "; }
+  details.more > div { padding: 0 16px 16px; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .sub { font-weight: 700; font-size: 15.5px; margin: 14px 0 0; text-align: center; }
+
   /* try it */
   .try { display: grid; grid-template-columns: 1fr 1.1fr; gap: 26px; align-items: start; }
   .try p { margin: 0 0 14px; }
@@ -96,10 +127,14 @@
     h1 { font-size: 26px; text-align: center; }
     .head { flex-direction: column; gap: 8px; }
     .head img { width: 84px; }
-    .navlinks { gap: 12px; font-size: 14px; }
+    .navlinks { gap: 10px; font-size: 13.5px; }
+    .navlinks a[title] { display: none; }
     .try { grid-template-columns: 1fr; }
     .step { font-size: 11px; }
     .stage { padding: 14px; }
+    .cards { grid-template-columns: repeat(2, 1fr); }
+    .two { grid-template-columns: 1fr; }
+    .stamp { font-size: 32px; }
     .term { font-size: 13px; }
   }
 </style>
@@ -143,36 +178,59 @@
     <figcaption><b>Figure 1.</b> One <code>pip install -U numpy</code> silently changes 27 packages; 100+ actions later the old environment is gone. With BackUpper, the same call is caught, the environment is backed up first, and it restores in one step.</figcaption>
   </figure>
 
-  <section>
-    <details><summary><h2 style="display:inline">Abstract</h2></summary>
-    <div class="abstract">
-      <p>Coding agents now complete tasks autonomously, modifying real-world state such as artifacts, software environments, and configurations along the way. Yet they show limited <i>backup awareness</i>: recognizing that an action will modify state that may later be needed, and preserving it beforehand. To evaluate backup awareness, we introduce <b>RegretBench</b>: 205 executable tasks grounded in <i>regret moments</i> reported on platforms such as X.com, GitHub, and Stack Overflow, where users regretted not preserving state they later needed. Across six frontier models, agents complete 86.1% of tasks on average yet back up before these moments in only 15.2%, showing that task completion does not imply backup awareness.</p>
-      <p>Because it is hard to predict which changes will be regretted, we propose <b>BackUpper</b>, a harness plug-in backup layer that checks every tool call and preserves affected state before modification. It combines rule-based strategies for common destructive operations with a lightweight subagent for complex cases. BackUpper's restored state reaches 92.2% average similarity to the original, and every regret-moment action is covered. Achieving this costs only $0.014 per task, with 7× fewer tokens than main-agent self-backup. When users state backup preferences, BackUpper narrows the backup scope and achieves 84.5% F1. It can also add new rule-based strategies through self-improvement to reduce subagent calls over time. These results show that agents can keep actions reversible at low cost while respecting users' preferences.</p>
-    </div></details>
-  </section>
-
   <section id="regretbench">
     <h2>RegretBench: do agents back up before you regret?</h2>
     <p>Each task is built from a real <b>regret moment</b>: someone let an action change state they later needed, and could not get it back. The agent finishes the task; the question is whether it kept a way back.</p>
     <div class="stage" data-stepper="regret">
-      <div class="term"><div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><pre></pre></div>
+      <div class="term"><div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><pre></pre><div class="callout"></div><div class="stamp"></div></div>
       <div class="note"></div>
       <div class="steps"></div>
       <button class="replay">↻ Replay</button>
     </div>
-    <div class="placeholder">Results: coming next</div>
+    <div class="result">
+      <h3>Main result: agents finish the task, but rarely back up first</h3>
+      <p class="lead">Across six frontier models, agents finish <b>86.1%</b> of tasks, back up only <b>17.4%</b> of the out-of-workspace state they change, and just <b>15.2%</b> of the steps users later regretted. Five of six back up more often overall than at the regret moment, so even their backups tend to miss what users needed.</p>
+      <div class="chart" id="c-rb-main"></div>
+      <p class="cap">Task pass rate, out-of-workspace backup rate (OWBR) and regret-moment backup rate (RMBR) on all 205 tasks.</p>
+      <details class="more"><summary>More RegretBench results</summary><div>
+        <div class="cards"><div><b>205</b><span>executable tasks</span></div><div><b>5</b><span>tools: shell, SQL, browser, email, DevOps</span></div><div><b>~45</b><span>actions per task</span></div><div><b>3</b><span>real-world source categories</span></div></div>
+        <div class="two">
+          <div><p class="sub">Stronger models don't back up more</p><div class="chart sm" id="c-rb-cap"></div><p class="cap">GPT 5.4 → 5.6-Sol in Codex, 60-task subset.</p></div>
+          <div><p class="sub">It's the model, not the harness</p><div class="chart sm" id="c-rb-harness"></div><p class="cap">RMBR of three models in three harnesses, 60-task subset.</p></div>
+        </div>
+        <p class="sub">Backup rate by tool</p><div class="chart sm" id="c-rb-tool"></div><p class="cap">RMBR averaged over the six models.</p>
+      </div></details>
+    </div>
   </section>
 
   <section id="backupper">
     <h2>BackUpper: back up before every tool call</h2>
     <p>BackUpper sits on the harness's pre-tool-call hook. It <b>intercepts</b> each call, <b>backs up</b> the state the call will change, then lets the call <b>run</b>. When you regret it, you <b>restore</b>.</p>
     <div class="stage" data-stepper="backup">
-      <div class="term"><div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><pre></pre></div>
+      <div class="term"><div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><pre></pre><div class="callout"></div><div class="stamp"></div></div>
       <div class="note"></div>
       <div class="steps"></div>
       <button class="replay">↻ Replay</button>
     </div>
-    <div class="placeholder">Results: coming next</div>
+    <div class="result">
+      <h3>Main result: every regret moment covered, on every model</h3>
+      <p class="lead">With BackUpper, RMBR and OWBR reach <b>100%</b> on all six models, and the restored state is <b>92.2%</b> similar to the original on average (14.3% without restoring).</p>
+      <div class="chart" id="c-bu-main"></div>
+      <p class="cap">Regret-moment backup rate without and with BackUpper, 205 tasks.</p>
+      <div class="cards"><div><b>92.2%</b><span>restored-state similarity</span></div><div><b>$0.014</b><span>per task*</span></div><div><b>7×</b><span>fewer tokens*</span></div><div><b>84.5%</b><span>F1 on user preferences</span></div></div>
+      <p class="cap">* vs. the main agent backing up by itself, with prompt caching.</p>
+      <details class="more"><summary>More BackUpper results</summary><div>
+        <p class="sub">Against other backup approaches</p><div class="chart" id="c-bu-base"></div><p class="cap">205 tasks, averaged over six models.</p>
+        <div class="two">
+          <div><p class="sub">Restored state, by tool</p><div class="chart sm" id="c-bu-restore"></div><p class="cap">Similarity to the original state; 14.3% without restoring.</p></div>
+          <div><p class="sub">Backs up only what you care about</p><div class="chart sm" id="c-bu-pref"></div><p class="cap">Backup-trigger F1 under three personalized modes.</p></div>
+        </div>
+        <div class="two">
+          <div><p class="sub">Works beyond RegretBench</p><div class="chart sm" id="c-bu-gen"></div><p class="cap">OWBR on 40 external tasks; pass rate unchanged.</p></div>
+          <div><p class="sub">Learns new rules over time</p><div class="chart sm" id="c-bu-self"></div><p class="cap">Rule-based coverage on 65 Terminal tasks, GPT 5.6-Sol.</p></div>
+        </div>
+      </div></details>
+    </div>
   </section>
 
   <section id="try">
@@ -212,57 +270,117 @@
 
 <script>
 const P = t => `<span class="p">&gt;</span> ${t}`, CALL = t => `<span class="hl">⏺ ${t}</span>`, OUT = t => `<span class="dim">  ⎿ ${t}</span>`;
+const RED = '#ff7b72', BUTTER = '#FFD166', MINT = '#6CC4A1', CORAL = '#E58A62';
+// each step: lines (only the new ones), key = index of the line to highlight, callout = [text, colour], stamp = [title, subtitle, colour]
 const DATA = {
   regret: [
-    { name: 'Upgrade', note: 'One call quietly changes the whole environment.',
+    { name: 'Upgrade', note: 'One call quietly changes the whole environment.', key: [2, 'bad'], callout: ['⚠ 27 packages changed', CORAL],
       lines: [P('upgrade numpy to the latest version'), CALL('Bash(pip install -U numpy)'),
-              OUT('Successfully installed numpy-2.3 <span style="color:#ff7b72">+ 26 other packages</span>'), '<span class="dim">⏺ Done! numpy upgraded ✓</span>'] },
-    { name: '100+ actions later', note: 'The session goes on; the old versions scroll out of sight.',
+              OUT(`Successfully installed numpy-2.3 <span style="color:${RED}">+ 26 other packages</span>`), '<span class="dim">⏺ Done! numpy upgraded ✓</span>'] },
+    { name: '100+ actions later', note: 'The session goes on; the old versions scroll out of sight.', callout: ['⏩ 100+ actions later', BUTTER],
       lines: ['<span class="dim">  ⋮   … 100+ more turns and actions …   ⋮</span>'] },
-    { name: 'Regret', note: 'Now the user needs the old state back.',
-      lines: [P('actually… I want my old dependencies back!')] },
-    { name: "Can't restore", note: 'Rewind only covers code, and the agent kept no record. This is a regret moment.',
-      lines: [P('/rewind'), '<span style="color:#ff7b72">  ✗ can\'t rewind the environment</span>', P('remember the old versions?'), '<span class="dim">⏺ Sorry, I don\'t.</span>'] },
+    { name: 'Regret', note: 'Now the user needs the old state back.', key: [0, ''], callout: ['😟 the user needs it back', BUTTER],
+      lines: [P('<b>actually… I want my old dependencies back!</b>')] },
+    { name: "Can't restore", note: 'Rewind only covers code, and the agent kept no record.', key: [1, 'bad'], stamp: ['REGRET MOMENT', 'the state you needed is gone for good', RED],
+      lines: [P('/rewind'), `<span style="color:${RED}">  ✗ can't rewind the environment</span>`, P('remember the old versions?'), '<span class="dim">⏺ Sorry, I don\'t.</span>'] },
   ],
   backup: [
-    { name: 'Intercept', note: 'The call is caught on the pre-tool-call hook, before it touches anything.',
-      lines: [P('upgrade numpy to the latest version'), CALL('Bash(pip install -U numpy)') + '   <span class="crab">🦀 ✋ hold on!</span>'] },
-    { name: 'Back up', note: 'Common operations use built-in rules; complex ones (like ./run.sh) go to a lightweight subagent.',
+    { name: 'Intercept', note: 'The call is caught on the pre-tool-call hook, before it touches anything.', key: [1, ''], callout: ['✋ intercepted', BUTTER],
+      lines: [P('upgrade numpy to the latest version'), CALL('Bash(pip install -U numpy)') + '   <span class="crab">🦀 hold on!</span>'] },
+    { name: 'Back up', note: 'Common operations use built-in rules; complex ones (like ./run.sh) go to a lightweight subagent.', key: [1, 'good'], callout: ['📦 backed up: reqs.txt', MINT],
       lines: ['<span class="crab">  🦀 common operation → rule-based backup</span>', '<span class="ok">  $ pip freeze &gt; reqs.txt   ✓ 27 package versions saved</span>'] },
-    { name: 'Run', note: 'Only then does the call run, unchanged.',
+    { name: 'Run', note: 'Only then does the call run, unchanged.', callout: ['▶ runs as usual', '#C9D1D9'],
       lines: [OUT('Successfully installed numpy-2.3 + 26 other packages'), '<span class="dim">  ⋮   … 100+ more turns and actions …   ⋮</span>'] },
-    { name: 'Restore', note: 'The backup is still there, however long ago it was made.',
+    { name: 'Restore', note: 'The backup is still there, however long ago it was made.', key: [2, 'good'], stamp: ['RESTORED', '27 packages back to their old versions', MINT],
       lines: [P('actually… I want my old dependencies back!'), '<span class="crab">🦀 BackUpper restore</span>', '<span class="ok">  ✓ 27 packages restored</span>'] },
   ],
 };
-// A stepper whose terminal is cumulative: step i shows everything from steps 0..i, and only step i's lines are new.
+// Stepper with a cumulative terminal: step i shows steps 0..i; earlier steps dim, step i's lines are new.
 function stepper(root, STEPS) {
   const screen = root.querySelector('pre'), note = root.querySelector('.note'), stepsEl = root.querySelector('.steps');
+  const callout = root.querySelector('.callout'), stamp = root.querySelector('.stamp');
   const fill = document.createElement('div'); fill.className = 'fill'; stepsEl.appendChild(fill);
   const btns = STEPS.map((s, i) => { const b = document.createElement('button'); b.className = 'step'; b.innerHTML = `<span></span>${s.name}`; b.onclick = () => show(i); stepsEl.appendChild(b); return b; });
-  const HOLD = 3200, LINE = 380;
-  let cur = 0, timer = null, typing = null;
-  const paint = (i, n) => {   // steps before i dimmed, step i's first n lines bright
+  const HOLD = 3400, LINE = 380;
+  let cur = 0, timer = null, typing = null, fx = null;
+  const lineHTML = (s, j) => s.key && s.key[0] === j ? `<span class="key ${s.key[1]}">${s.lines[j]}</span>` : s.lines[j];
+  const paint = (i, n) => {
     const prev = STEPS.slice(0, i).flatMap(s => s.lines).map(l => `<span class="old">${l}</span>`);
-    screen.innerHTML = prev.concat(STEPS[i].lines.slice(0, n)).join('\n');
+    const now = STEPS[i].lines.slice(0, n).map((_, j) => lineHTML(STEPS[i], j));
+    screen.innerHTML = prev.concat(now).join('\n');
     screen.scrollTop = screen.scrollHeight;
+  };
+  const effects = s => {
+    callout.classList.remove('show'); stamp.classList.remove('show');
+    if (s.callout) { callout.textContent = s.callout[0]; callout.style.background = s.callout[1]; callout.classList.add('show'); }
+    if (s.stamp) { stamp.innerHTML = `${s.stamp[0]}<small>${s.stamp[1]}</small>`; stamp.style.color = stamp.style.borderColor = s.stamp[2]; stamp.classList.add('show'); }
   };
   function render(i, animate) {
     btns.forEach((b, k) => { b.classList.toggle('on', k <= i); b.classList.toggle('cur', k === i); });
     fill.style.width = Math.max(0, btns[i].offsetLeft + btns[i].offsetWidth / 2 - btns[0].offsetLeft - 9) + 'px';
     note.textContent = STEPS[i].note;
-    clearInterval(typing);
+    clearInterval(typing); clearTimeout(fx);
+    callout.classList.remove('show'); stamp.classList.remove('show');
     const L = STEPS[i].lines.length;
-    if (!animate) return paint(i, L);
+    if (!animate) { paint(i, L); effects(STEPS[i]); return; }
     let n = 0; paint(i, 0);
-    typing = setInterval(() => { n++; paint(i, n); if (n >= L) clearInterval(typing); }, LINE);
+    typing = setInterval(() => { n++; paint(i, n); if (n >= L) { clearInterval(typing); fx = setTimeout(() => effects(STEPS[i]), 150); } }, LINE);
   }
-  function schedule() { clearTimeout(timer); timer = setTimeout(() => show((cur + 1) % STEPS.length, true), HOLD + (cur === STEPS.length - 1 ? 1600 : 0)); }
+  function schedule() { clearTimeout(timer); timer = setTimeout(() => show((cur + 1) % STEPS.length, true), HOLD + (cur === STEPS.length - 1 ? 2000 : 0)); }
   function show(i, animate = false) { cur = i; render(i, animate); schedule(); }   // click: jump there, keep playing
   root.querySelector('.replay').onclick = () => show(0, true);
   show(0, true);
 }
 document.querySelectorAll('[data-stepper]').forEach(el => stepper(el, DATA[el.dataset.stepper]));
+
+// ---------- charts (numbers from the paper) ----------
+const INK = '#2B2B2B', MUTED = '#6B6558', GRID = '#E7E1D4', C = { pass: '#F2C14E', owbr: '#E58A62', rmbr: '#2E8A62', mint: '#6CC4A1', lav: '#9C87E0', gray: '#B8B0A2' };
+const MODELS = ['Claude\nOpus-5', 'Claude\nSonnet-5', 'GPT\n5.6-Sol', 'GPT\n5.6-Terra', 'DeepSeek\nV4-Pro', 'Gemini\n3.7-Flash'];
+const base = () => ({ textStyle: { fontFamily: 'Source Sans 3, sans-serif', color: INK },
+  tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, valueFormatter: v => v + '%' },
+  legend: { top: 0, textStyle: { color: MUTED } }, grid: { left: 44, right: 12, top: 40, bottom: 48 },
+  yAxis: { type: 'value', max: 100, axisLabel: { formatter: '{value}%', color: MUTED }, splitLine: { lineStyle: { color: GRID } } } });
+const xcat = (data) => ({ type: 'category', data, axisLabel: { color: INK, interval: 0, lineHeight: 15 }, axisTick: { show: false }, axisLine: { lineStyle: { color: GRID } } });
+const bar = (name, data, color, extra = {}) => ({ name, type: 'bar', data, itemStyle: { color, borderRadius: [4, 4, 0, 0] }, barGap: '15%', ...extra });
+const lbl = (fmt = '{c}', color = INK) => ({ label: { show: true, position: 'top', formatter: fmt, fontSize: 11.5, color, fontWeight: 600 } });
+const charts = {
+  'c-rb-main': () => ({ ...base(), xAxis: xcat(MODELS), series: [
+    bar('Task pass rate', [92.2, 82.0, 90.7, 85.9, 81.5, 84.4], C.pass),
+    bar('OWBR', [41.6, 25.1, 12.5, 9.1, 8.3, 7.5], C.owbr),
+    bar('RMBR', [64.4, 11.2, 5.9, 4.4, 2.9, 2.4], C.rmbr, lbl()) ] }),
+  'c-rb-cap': () => ({ ...base(), legend: { top: 0, textStyle: { color: MUTED } },
+    yAxis: [{ type: 'value', name: 'AA index', max: 60, axisLabel: { color: MUTED }, splitLine: { lineStyle: { color: GRID } } },
+            { type: 'value', name: 'RMBR', max: 100, axisLabel: { formatter: '{value}%', color: MUTED }, splitLine: { show: false } }],
+    tooltip: { trigger: 'axis' }, grid: { left: 40, right: 44, top: 44, bottom: 30 },
+    xAxis: xcat(['GPT 5.4', 'GPT 5.5', 'GPT 5.6-Sol']),
+    series: [bar('Intelligence index', [39, 42, 47], C.gray, lbl()), { name: 'RMBR', type: 'line', yAxisIndex: 1, data: [6.7, 5.0, 5.0], symbolSize: 9, lineStyle: { color: C.rmbr, width: 3 }, itemStyle: { color: C.rmbr }, ...lbl('{c}%', C.rmbr) }] }),
+  'c-rb-harness': () => ({ ...base(), xAxis: xcat(['Claude\nOpus-5', 'GPT\n5.6-Sol', 'DeepSeek\nV4-Pro']), series: [
+    bar('Claude Code', [70.0, 8.3, 1.7], '#E0896A'), bar('Codex', [73.3, 5.0, 0.0], '#5FB89A'), bar('Hermes', [68.3, 5.0, 1.7], '#8EA6E0') ] }),
+  'c-rb-tool': () => ({ ...base(), legend: { show: false }, yAxis: { ...base().yAxis, max: 40 }, xAxis: xcat(['Terminal', 'SQL', 'Browser', 'Email', 'DevOps']),
+    series: [bar('RMBR', [13.6, 12.7, 15.7, 20.8, 20.0], C.rmbr, { ...lbl('{c}%'), barWidth: '45%' })] }),
+  'c-bu-main': () => ({ ...base(), xAxis: xcat(MODELS), series: [
+    bar('Without BackUpper', [64.4, 11.2, 5.9, 4.4, 2.9, 2.4], C.gray, lbl()),
+    bar('With BackUpper', [100, 100, 100, 100, 100, 100], C.rmbr, lbl()) ] }),
+  'c-bu-base': () => ({ ...base(), xAxis: xcat(['RMBR', 'OWBR']), series: [
+    bar('BackUpper', [100, 100], C.rmbr, lbl()), bar('Skill-Based', [81.4, 80.5], C.pass, lbl()),
+    bar('BackUpper w/o experience', [77.6, 73.2], C.mint, lbl()), bar('No backup support', [15.2, 17.4], C.gray, lbl()),
+    bar('Destructive Command Guard', [8.1, 7.3], C.owbr, lbl()) ] }),
+  'c-bu-restore': () => ({ ...base(), legend: { show: false }, yAxis: { ...base().yAxis, min: 0 }, xAxis: xcat(['Terminal', 'SQL', 'Browser', 'Email', 'DevOps']),
+    series: [bar('Similarity', [94.7, 90.5, 88.9, 96.4, 92.4], C.rmbr, { ...lbl('{c}%'), barWidth: '45%',
+      markLine: { symbol: 'none', data: [{ yAxis: 14.3, label: { formatter: 'no restore 14.3%', color: MUTED, position: 'insideStartTop' }, lineStyle: { color: C.owbr, type: 'dashed' } }] } })] }),
+  'c-bu-pref': () => ({ ...base(), xAxis: xcat(['High-Impact', 'Beyond-Request', 'Human-Work']), series: [
+    bar('Claude Opus-5', [89.8, 76.2, 90.7], '#E0896A'), bar('GPT 5.6-Sol', [95.7, 76.9, 94.0], '#5FB89A'), bar('DeepSeek V4-Pro', [84.1, 73.2, 80.3], '#8EA6E0') ] }),
+  'c-bu-gen': () => ({ ...base(), xAxis: xcat(['GPT 5.6-Sol', 'Claude Opus-5']), series: [
+    bar('Without BackUpper', [23.1, 47.1], C.gray, lbl()), bar('With BackUpper', [100, 100], C.rmbr, lbl()) ] }),
+  'c-bu-self': () => ({ ...base(), legend: { show: false }, yAxis: { ...base().yAxis, max: 40 },
+    xAxis: { ...xcat(['0', '5', '10', '20', '30']), name: 'tasks used for self-improvement', nameLocation: 'middle', nameGap: 28, nameTextStyle: { color: MUTED } },
+    series: [{ name: 'Rule coverage', type: 'line', data: [14.9, 21.6, 25.7, 29.4, 31.2], symbolSize: 9, lineStyle: { color: C.rmbr, width: 3 }, itemStyle: { color: C.rmbr }, areaStyle: { color: 'rgba(108,196,161,.18)' }, ...lbl('{c}%') }] }),
+};
+const made = {};
+function draw(id) { const el = document.getElementById(id); if (!el || made[id] || !el.offsetWidth) return; made[id] = echarts.init(el); made[id].setOption(charts[id]()); }
+Object.keys(charts).forEach(draw);
+document.querySelectorAll('details.more').forEach(d => d.addEventListener('toggle', () => { if (d.open) d.querySelectorAll('.chart').forEach(c => { draw(c.id); made[c.id] && made[c.id].resize(); }); }));
+window.addEventListener('resize', () => Object.values(made).forEach(c => c.resize()));
 </script>
 </body>
 </html>
