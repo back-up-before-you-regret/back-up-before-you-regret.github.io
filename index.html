@@ -404,8 +404,8 @@ const charts = {
   'c-rb-tool': () => base({ legend: { show: false }, yAxis: { ...base().yAxis, max: 40, interval: 10 }, xAxis: xcat(['Terminal', 'SQL', 'Browser', 'Email', 'DevOps']),
     series: [bar('RMBR', [13.6, 12.7, 15.7, 20.8, 20.0], C.rmbr, { barWidth: '42%', label: { ...LBL(12), formatter: '{c}%' } })] }),
   'c-bu-main': (hidden = {}) => {
-    const M = [['BackUpper', C.rmbr], ['Skill-Based', C.pass], ['BackUpper w/o experience', C.mint], ['Post-hoc Recovery', C.lav], ['No backup support', C.gray], ['Destructive Command Guard', C.owbr]];
-    const V = { RMBR: [100, 81.4, 77.6, null, 15.2, 8.1], 'State similarity': [92.2, 71.1, 68.7, 47.4, 25.6, 20.3], OWBR: [100, 80.5, 73.2, null, 17.4, 7.3] };
+    const M = [['BackUpper', C.rmbr], ['Skill-Based', C.pass], ['Post-hoc Recovery', C.lav], ['Baseline', C.gray], ['Destructive Command Guard', C.owbr]];
+    const V = { RMBR: [100, 81.4, null, 15.2, 8.1], 'State similarity': [92.2, 71.1, 47.4, 25.6, 20.3], OWBR: [100, 80.5, null, 17.4, 7.3] };
     const keys = Object.keys(V), W = 29, G = 3;
     const title = keys.map((k, j) => ({ text: k, left: (5.5 + j * (W + G) + W / 2) + '%', textAlign: 'center', bottom: 2, textStyle: { fontSize: 20, fontWeight: 700, color: INK, fontFamily: "'Source Sans 3', sans-serif" } }));
     const grid = [], xAxis = [], yAxis = [], series = [];
