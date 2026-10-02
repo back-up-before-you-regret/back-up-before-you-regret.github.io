@@ -345,8 +345,13 @@
     </div>
 
     <div class="result" style="margin-top:16px">
-      <div class="cards"><div><b>92.2%</b><span>restored-state similarity</span></div><div><b>$0.014</b><span>per task*</span></div><div><b>7×</b><span>fewer tokens*</span></div><div><b>84.5%</b><span>F1 on user preferences</span></div></div>
-      <p class="cap">* vs. the main agent backing up by itself, with prompt caching.</p>
+      <div class="cards">
+        <div><b>25× cheaper*</b><span>$0.014 per task</span></div>
+        <div><b>31.7% faster*</b><span>backup latency</span></div>
+        <div><b>84.5%</b><span>personalization F1</span></div>
+        <div><b>64% less†</b><span>storage, 0.82 MB per task</span></div>
+      </div>
+      <p class="cap">* vs. Skill-Based (main agent backing up by itself), with prompt caching. &nbsp; † vs. copying affected files, 40 Terminal tasks.</p>
       <details class="more"><summary>More BackUpper results</summary><div>
         <p class="sub">Every model reaches 100%</p><div class="chart sm" id="c-bu-models"></div><p class="cap">RMBR without and with BackUpper.</p>
         <div class="two">
