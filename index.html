@@ -575,13 +575,10 @@ function resultStep(root, on, chartId) {
       const finalHook = () => {
         hook.className = 'hb hook done'; a2.classList.add('on'); tool.className = 'hb run';
         hstate.textContent = c.restore ? '↩ restore' : c.log ? '✓ backed up' : '✓ no backup';
-        tstate.textContent = c.restore ? 'state restored' : '▶ original call runs';
+        tstate.textContent = c.restore ? '✓ state restored' : '✓ original call runs';
       };
       a1.classList.add('on');
-      if (fresh) {
-        hook.className = 'hb hook held'; hstate.textContent = '⏸ held'; a2.classList.remove('on'); tool.className = 'hb'; tstate.textContent = 'waiting';
-        hookT = setTimeout(finalHook, 900);
-      } else finalHook();
+      finalHook();
       cmd.textContent = c.cmd;
       out.innerHTML = `<div class="orow"><b>${c.restore ? 'Found' : 'Matched'}</b><span>${c.out[0]}</span></div><div class="orow"><b>${c.restore ? 'Restore' : 'Runs'}</b><span>${c.out[1]}</span></div>`; out.style.background = c.pref ? 'var(--butter-bg)' : c.restore ? 'var(--mint-bg)' : (c.cls === 'sub' ? 'var(--lav-bg)' : c.cls === 'pass' ? '#F3EEE3' : 'var(--mint-bg)');
       prefNode.className = 'node prefnode' + (c.pref ? ' hit' : ' idle');
