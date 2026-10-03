@@ -89,10 +89,10 @@
   .canvas, .respane { overflow: hidden; }
   @media (min-width: 761px) {
     #rb-stage .canvas, #rb-stage .respane { height: 428px; }
-    #bu-stage .canvas, #bu-stage .respane { height: 570px; }
+    #bu-stage .canvas, #bu-stage .respane { height: 499px; }
   }
   #rb-stage .respane .chart { height: 350px; }
-  #bu-stage .respane .chart { height: 480px; }
+  #bu-stage .respane .chart { height: 428px; }
   .respane .lead { margin-bottom: 0; }
   #rb-stage .note, #bu-stage .note { min-height: 26px; }
   .replay { display: block; margin: 14px 0 0 auto; background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 4px 14px; font: 13px "IBM Plex Mono", monospace; color: var(--muted); cursor: pointer; }
@@ -139,6 +139,8 @@
   .hb em { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font: 700 13px 'IBM Plex Mono', monospace; font-style: normal; }
   .hb.run { border-color: var(--accent); background: var(--mint-bg); } .hb.run small { color: var(--accent); font-weight: 700; }
   .hba { text-align: center; color: var(--faint); font-size: 20px; transition: color .25s; } .hba.on { color: var(--accent); }
+  .trail { margin-top: 10px; font: 600 13px 'IBM Plex Mono', monospace; color: var(--accent); line-height: 1.6; }
+  .trail span { color: var(--muted); font-weight: 400; }
   .callcard { border: 2px solid var(--ink); border-radius: 12px; background: var(--term); color: #EDE6D6; padding: 12px 14px; font: 14px/1.5 "IBM Plex Mono", monospace; box-shadow: 4px 4px 0 var(--ink); }
   .callcard .lbl { font: 700 12px "Source Sans 3", sans-serif; letter-spacing: .08em; color: #BFB6A6; text-transform: uppercase; }
   .callcard .cmd { color: var(--butter); font-weight: 600; word-break: break-word; }
@@ -177,6 +179,7 @@
   .cap { color: var(--muted); font-size: 16px; text-align: center; margin: 2px 0 0; }
   .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 18px 0 4px; }
   .cards div { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; text-align: center; }
+  .cards.three { grid-template-columns: repeat(3, 1fr); }
   .cards b { display: block; font-size: 25px; color: var(--accent); line-height: 1.2; }
   .cards span { font-size: 13.5px; color: var(--muted); }
   details.more { margin-top: 16px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
@@ -205,11 +208,11 @@
     .flow { grid-template-columns: 1fr; }
     .hookbar { grid-template-columns: 1fr; gap: 4px; } .hba { transform: rotate(90deg); line-height: 1; }
     .try, .two { grid-template-columns: 1fr; }
-    .cards { grid-template-columns: repeat(2, 1fr); }
+    .cards, .cards.three { grid-template-columns: 1fr; }
     .step { font-size: 10.5px; max-width: 70px; }
     .stage { padding: 14px; }
     #rb-stage .canvas, #rb-stage .respane { height: 854px; }
-    #bu-stage .canvas, #bu-stage .respane { height: 1079px; }
+    #bu-stage .canvas, #bu-stage .respane { height: 856px; }
     .stage .note { min-height: 77px !important; }
   }
 </style>
@@ -309,8 +312,8 @@
     </div>
 
     <div class="result" style="margin-top:16px">
+      <div class="cards three"><div><b>205</b><span>tasks</span></div><div><b>~45</b><span>actions per task</span></div><div><b>5</b><span>tools: shell, SQL, browser, email, DevOps</span></div></div>
       <details class="more"><summary>More RegretBench results</summary><div>
-        <div class="cards"><div><b>205</b><span>executable tasks</span></div><div><b>5</b><span>tools: shell, SQL, browser, email, DevOps</span></div><div><b>~45</b><span>actions per task</span></div><div><b>3</b><span>real-world source categories</span></div></div>
         <div class="two">
           <div><p class="sub">Stronger models don't back up more</p><div class="chart sm" id="c-rb-cap"></div><p class="cap">GPT 5.4 → 5.6-Sol in Codex, 60-task subset.</p></div>
           <div><p class="sub">It's the model, not the harness</p><div class="chart sm" id="c-rb-harness"></div><p class="cap">RMBR of three models in three harnesses, 60-task subset.</p></div>
@@ -326,17 +329,11 @@
     <p>Because it is hard to predict which changes will be regretted, BackUpper <b>checks every tool call</b> on the harness's pre-tool-call hook, before it runs. Read-only calls pass straight through. Common operations get a <b>rule-based backup</b>: rewriting the command (<code>rm</code> → move to trash), pairing it with a backup (<code>pip freeze</code> before <code>pip install</code>), or snapshotting workspace edits. Anything else goes to an LLM checker and a <b>lightweight subagent</b> that inspects the call and backs up what it will change. Users can <b>customize</b> what gets backed up in plain words, and every backup is logged with a command to restore it. We measure backup coverage (RMBR, OWBR) and how close the restored state is to the original (<b>state similarity</b>).</p>
     <div class="stage" id="bu-stage">
       <div class="canvas">
-        <div class="hookbar">
-          <div class="hb"><span>🤖</span><div><b>Agent</b><small>proposes a tool call</small></div></div>
-          <div class="hba" id="hba1">→</div>
-          <div class="hb hook" id="hb-hook"><span>🦀</span><div><b>BackUpper</b><small>pre-tool-call hook</small></div><em id="hb-state"></em></div>
-          <div class="hba" id="hba2">→</div>
-          <div class="hb" id="hb-tool"><span>⚙️</span><div><b>Tool</b><small id="hb-tstate">waiting</small></div></div>
-        </div>
         <div class="flow">
           <div>
             <div class="callcard"><div class="lbl">incoming tool call</div><div class="cmd" id="bu-cmd"></div><div id="bu-pref" hidden></div></div>
             <div class="outcome" id="bu-out"></div>
+            <div class="trail" id="bu-trail"></div>
           </div>
           <div class="route" id="bu-route">
             <div class="node" data-n="0"><span>👀</span><span>Read-only allowlist</span><span class="r"></span></div>
@@ -363,14 +360,14 @@
     </div>
 
     <div class="result" style="margin-top:16px">
-      <div class="cards">
+      <div class="cards three">
         <div><b>25× cheaper*</b><span>$0.014 per task</span></div>
         <div><b>31.7% faster*</b><span>backup latency</span></div>
         <div><b>84.5%</b><span>personalization F1</span></div>
-        <div><b>64% smaller†</b><span>storage, 0.82 MB per task</span></div>
       </div>
-      <p class="cap">* vs. Skill-Based (main agent backing up by itself). &nbsp; † vs. copying affected files.</p>
+      <p class="cap">* vs. Skill-Based (main agent backing up by itself).</p>
       <details class="more"><summary>More BackUpper results</summary><div>
+        <div class="cards three"><div><b>64% smaller</b><span>storage than copying affected files</span></div><div><b>0.82 MB</b><span>storage per task, Full mode</span></div><div><b>70–92% smaller</b><span>in personalized modes</span></div></div>
         <div class="two">
           <div><p class="sub">Restored state, by tool</p><div class="chart sm" id="c-bu-restore"></div><p class="cap">Similarity to the original state, without and with restoring.</p></div>
           <div><p class="sub">Backs up only what you care about</p><div class="chart sm" id="c-bu-pref"></div><p class="cap">Backup-trigger F1 under three personalized modes.</p></div>
@@ -539,8 +536,7 @@ function resultStep(root, on, chartId) {
 (() => {
   const root = document.getElementById('bu-stage');
   const cmd = document.getElementById('bu-cmd'), out = document.getElementById('bu-out'), log = document.getElementById('bu-log');
-  const hook = document.getElementById('hb-hook'), hstate = document.getElementById('hb-state'), tool = document.getElementById('hb-tool'), tstate = document.getElementById('hb-tstate'), a1 = document.getElementById('hba1'), a2 = document.getElementById('hba2');
-  let hookT = null;
+  const trail = document.getElementById('bu-trail');
   const nodes = [...root.querySelectorAll('.node[data-n]')], prefNode = root.querySelector('.prefnode'), pref = document.getElementById('bu-pref');
   const CALLS = [
     { name: 'Read-only', cmd: 'Bash(cat notes.txt)', hit: 0, cls: 'pass', r: 'pass ✓',
@@ -570,15 +566,8 @@ function resultStep(root, on, chartId) {
     (i, fresh) => {
       resultStep(root, i === CALLS.length, 'c-bu-main'); if (i === CALLS.length) return;
       const c = CALLS[i];
-      // the hook holds the call, backs up (or not), then releases it to the tool
-      clearTimeout(hookT);
-      const finalHook = () => {
-        hook.className = 'hb hook done'; a2.classList.add('on'); tool.className = 'hb run';
-        hstate.textContent = c.restore ? '↩ restore' : c.log ? '✓ backed up' : '✓ no backup';
-        tstate.textContent = c.restore ? '✓ state restored' : '✓ original call runs';
-      };
-      a1.classList.add('on');
-      finalHook();
+      // the pre-tool-call hook: the call is held, backed up (or not), then the original call runs
+      trail.innerHTML = c.restore ? '↩ restored from the backup log' : `<span>⏸ held at hook</span> → ✓ ${c.log ? 'backed up' : 'no backup needed'} → ✓ original call runs`;
       cmd.textContent = c.cmd;
       out.innerHTML = `<div class="orow"><b>${c.restore ? 'Found' : 'Matched'}</b><span>${c.out[0]}</span></div><div class="orow"><b>${c.restore ? 'Restore' : 'Runs'}</b><span>${c.out[1]}</span></div>`; out.style.background = c.pref ? 'var(--butter-bg)' : c.restore ? 'var(--mint-bg)' : (c.cls === 'sub' ? 'var(--lav-bg)' : c.cls === 'pass' ? '#F3EEE3' : 'var(--mint-bg)');
       prefNode.className = 'node prefnode' + (c.pref ? ' hit' : ' idle');
