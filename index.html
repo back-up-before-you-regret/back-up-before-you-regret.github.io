@@ -89,10 +89,10 @@
   .canvas, .respane { overflow: hidden; }
   @media (min-width: 761px) {
     #rb-stage .canvas, #rb-stage .respane { height: 428px; }
-    #bu-stage .canvas, #bu-stage .respane { height: 499px; }
+    #bu-stage .canvas, #bu-stage .respane { height: 570px; }
   }
   #rb-stage .respane .chart { height: 350px; }
-  #bu-stage .respane .chart { height: 428px; }
+  #bu-stage .respane .chart { height: 480px; }
   .respane .lead { margin-bottom: 0; }
   #rb-stage .note, #bu-stage .note { min-height: 26px; }
   .replay { display: block; margin: 14px 0 0 auto; background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 4px 14px; font: 13px "IBM Plex Mono", monospace; color: var(--muted); cursor: pointer; }
@@ -131,6 +131,14 @@
 
   /* BackUpper flow demo */
   .flow { display: grid; grid-template-columns: 250px 1fr; gap: 22px; align-items: start; }
+  .hookbar { display: grid; grid-template-columns: 1fr 26px 1.35fr 26px 1fr; align-items: center; margin-bottom: 16px; }
+  .hb { display: flex; align-items: center; gap: 10px; border: 2px solid var(--line); border-radius: 12px; background: #fff; padding: 7px 12px; transition: all .25s; position: relative; }
+  .hb > span { font-size: 22px; } .hb b { display: block; font-size: 15px; line-height: 1.2; } .hb small { color: var(--muted); font-size: 13px; }
+  .hb.hook { border-color: var(--ink); box-shadow: 3px 3px 0 var(--ink); }
+  .hb.hook.held { background: var(--butter-bg); } .hb.hook.done { background: var(--mint-bg); }
+  .hb em { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font: 700 13px 'IBM Plex Mono', monospace; font-style: normal; }
+  .hb.run { border-color: var(--accent); background: var(--mint-bg); } .hb.run small { color: var(--accent); font-weight: 700; }
+  .hba { text-align: center; color: var(--faint); font-size: 20px; transition: color .25s; } .hba.on { color: var(--accent); }
   .callcard { border: 2px solid var(--ink); border-radius: 12px; background: var(--term); color: #EDE6D6; padding: 12px 14px; font: 14px/1.5 "IBM Plex Mono", monospace; box-shadow: 4px 4px 0 var(--ink); }
   .callcard .lbl { font: 700 12px "Source Sans 3", sans-serif; letter-spacing: .08em; color: #BFB6A6; text-transform: uppercase; }
   .callcard .cmd { color: var(--butter); font-weight: 600; word-break: break-word; }
@@ -195,12 +203,13 @@
     .navlinks { gap: 10px; font-size: 13.5px; } .navlinks a[title] { display: none; }
     .pipe { grid-template-columns: 1fr; } .arrow { transform: rotate(90deg); height: 24px; }
     .flow { grid-template-columns: 1fr; }
+    .hookbar { grid-template-columns: 1fr; gap: 4px; } .hba { transform: rotate(90deg); line-height: 1; }
     .try, .two { grid-template-columns: 1fr; }
     .cards { grid-template-columns: repeat(2, 1fr); }
     .step { font-size: 10.5px; max-width: 70px; }
     .stage { padding: 14px; }
     #rb-stage .canvas, #rb-stage .respane { height: 854px; }
-    #bu-stage .canvas, #bu-stage .respane { height: 872px; }
+    #bu-stage .canvas, #bu-stage .respane { height: 1079px; }
     .stage .note { min-height: 77px !important; }
   }
 </style>
@@ -306,7 +315,6 @@
           <div><p class="sub">Stronger models don't back up more</p><div class="chart sm" id="c-rb-cap"></div><p class="cap">GPT 5.4 → 5.6-Sol in Codex, 60-task subset.</p></div>
           <div><p class="sub">It's the model, not the harness</p><div class="chart sm" id="c-rb-harness"></div><p class="cap">RMBR of three models in three harnesses, 60-task subset.</p></div>
         </div>
-        <p class="sub">Backup rate by tool</p><div class="chart sm" id="c-rb-tool"></div><p class="cap">RMBR averaged over the six models.</p>
       </div></details>
     </div>
   </section>
@@ -318,6 +326,13 @@
     <p>Because it is hard to predict which changes will be regretted, BackUpper <b>checks every tool call</b> on the harness's pre-tool-call hook, before it runs. Read-only calls pass straight through. Common operations get a <b>rule-based backup</b>: rewriting the command (<code>rm</code> → move to trash), pairing it with a backup (<code>pip freeze</code> before <code>pip install</code>), or snapshotting workspace edits. Anything else goes to an LLM checker and a <b>lightweight subagent</b> that inspects the call and backs up what it will change. Users can <b>customize</b> what gets backed up in plain words, and every backup is logged with a command to restore it. We measure backup coverage (RMBR, OWBR) and how close the restored state is to the original (<b>state similarity</b>).</p>
     <div class="stage" id="bu-stage">
       <div class="canvas">
+        <div class="hookbar">
+          <div class="hb"><span>🤖</span><div><b>Agent</b><small>proposes a tool call</small></div></div>
+          <div class="hba" id="hba1">→</div>
+          <div class="hb hook" id="hb-hook"><span>🦀</span><div><b>BackUpper</b><small>pre-tool-call hook</small></div><em id="hb-state"></em></div>
+          <div class="hba" id="hba2">→</div>
+          <div class="hb" id="hb-tool"><span>⚙️</span><div><b>Tool</b><small id="hb-tstate">waiting</small></div></div>
+        </div>
         <div class="flow">
           <div>
             <div class="callcard"><div class="lbl">incoming tool call</div><div class="cmd" id="bu-cmd"></div><div id="bu-pref" hidden></div></div>
@@ -352,18 +367,17 @@
         <div><b>25× cheaper*</b><span>$0.014 per task</span></div>
         <div><b>31.7% faster*</b><span>backup latency</span></div>
         <div><b>84.5%</b><span>personalization F1</span></div>
-        <div><b>64% less†</b><span>storage, 0.82 MB per task</span></div>
+        <div><b>64% smaller†</b><span>storage, 0.82 MB per task</span></div>
       </div>
       <p class="cap">* vs. Skill-Based (main agent backing up by itself). &nbsp; † vs. copying affected files.</p>
       <details class="more"><summary>More BackUpper results</summary><div>
-        <p class="sub">Every model reaches 100%</p><div class="chart sm" id="c-bu-models"></div><p class="cap">RMBR without and with BackUpper.</p>
         <div class="two">
           <div><p class="sub">Restored state, by tool</p><div class="chart sm" id="c-bu-restore"></div><p class="cap">Similarity to the original state, without and with restoring.</p></div>
           <div><p class="sub">Backs up only what you care about</p><div class="chart sm" id="c-bu-pref"></div><p class="cap">Backup-trigger F1 under three personalized modes.</p></div>
         </div>
         <div class="two">
-          <div><p class="sub">Works beyond RegretBench</p><div class="chart sm" id="c-bu-gen"></div><p class="cap">OWBR on 40 external tasks; pass rate unchanged.</p></div>
-          <div><p class="sub">Learns new rules over time</p><div class="chart sm" id="c-bu-self"></div><p class="cap">Rule-based coverage on 65 Terminal tasks, GPT 5.6-Sol.</p></div>
+          <div><p class="sub">Doesn't hurt task success</p><div class="chart sm" id="c-bu-gen"></div><p class="cap">Task pass rate on 40 external tasks, without and with BackUpper.</p></div>
+          <div><p class="sub">Where backups come from</p><div class="chart sm" id="c-bu-self"></div><p class="cap">Share of backup triggers by tier on Terminal tasks, averaged over six models.</p></div>
         </div>
       </div></details>
     </div>
@@ -431,8 +445,6 @@ const charts = {
     series: [bar('Intelligence index', [39, 42, 47], C.gray), { name: 'RMBR', type: 'line', yAxisIndex: 1, data: [6.7, 5.0, 5.0], symbolSize: 9, lineStyle: { color: C.rmbr, width: 3 }, itemStyle: { color: C.rmbr }, label: { ...LBL(), formatter: '{c}%', color: C.rmbr } }] }),
   'c-rb-harness': () => base({ xAxis: xcat(['Claude\nOpus-5', 'GPT\n5.6-Sol', 'DeepSeek\nV4-Pro']), series: [
     bar('Claude Code', [70.0, 8.3, 1.7], C.owbr), bar('Codex', [73.3, 5.0, 0.0], C.mint), bar('Hermes', [68.3, 5.0, 1.7], C.blue) ] }),
-  'c-rb-tool': () => base({ legend: { show: false }, yAxis: { ...base().yAxis, max: 40, interval: 10 }, xAxis: xcat(['Terminal', 'SQL', 'Browser', 'Email', 'DevOps']),
-    series: [bar('RMBR', [13.6, 12.7, 15.7, 20.8, 20.0], C.rmbr, { barWidth: '42%', label: { ...LBL(12), formatter: '{c}%' } })] }),
   'c-bu-main': (hidden = {}) => {
     const M = [['BackUpper', C.rmbr], ['Skill-Based', C.pass], ['Post-hoc Recovery', C.lav], ['Baseline', C.gray], ['Destructive Command Guard', C.owbr]];
     const V = { RMBR: [100, 81.4, null, 15.2, 8.1], 'State similarity': [92.2, 71.1, 47.4, 25.6, 20.3], OWBR: [100, 80.5, null, 17.4, 7.3] };
@@ -453,17 +465,19 @@ const charts = {
       legend: { top: 0, itemWidth: 16, itemHeight: 11, textStyle: { color: INK, fontSize: 16 }, data: M.map(m => m[0]), selected: Object.fromEntries(M.map(m => [m[0], !hidden[m[0]]])) },
       title, grid, xAxis, yAxis, series };
   },
-  'c-bu-models': () => base({ xAxis: xcat(MODELS), series: [
-    bar('Without BackUpper', [64.4, 11.2, 5.9, 4.4, 2.9, 2.4], C.gray), bar('With BackUpper', [100, 100, 100, 100, 100, 100], C.rmbr) ] }),
   'c-bu-restore': () => base({ xAxis: xcat(['Terminal', 'SQL', 'Browser', 'Email', 'DevOps']), series: [
     bar('No restore', [37.2, 10.1, 0.0, 0.0, 0.0], C.gray), bar('Restored by BackUpper', [94.7, 90.5, 88.9, 96.4, 92.4], C.rmbr) ] }),
   'c-bu-pref': () => base({ xAxis: xcat(['High-Impact', 'Beyond-Request', 'Human-Work']), series: [
     bar('Claude Opus-5', [89.8, 76.2, 90.7], C.owbr), bar('GPT 5.6-Sol', [95.7, 76.9, 94.0], C.mint), bar('DeepSeek V4-Pro', [84.1, 73.2, 80.3], C.blue) ] }),
-  'c-bu-gen': () => base({ xAxis: xcat(['GPT 5.6-Sol', 'Claude Opus-5']), series: [
-    bar('Without BackUpper', [23.1, 47.1], C.gray), bar('With BackUpper', [100, 100], C.rmbr) ] }),
-  'c-bu-self': () => base({ legend: { show: false }, yAxis: { ...base().yAxis, max: 40, interval: 10 },
-    xAxis: { ...xcat(['0', '5', '10', '20', '30']), name: 'tasks used for self-improvement', nameLocation: 'middle', nameGap: 28, nameTextStyle: { color: MUTED } },
-    series: [{ name: 'Rule coverage', type: 'line', data: [14.9, 21.6, 25.7, 29.4, 31.2], symbolSize: 9, lineStyle: { color: C.rmbr, width: 3 }, itemStyle: { color: C.rmbr }, areaStyle: { color: 'rgba(108,196,161,.18)' }, label: { ...LBL(12), formatter: '{c}%' } }] }),
+  'c-bu-gen': () => base({ yAxis: { ...base().yAxis, max: 60, interval: 15 }, xAxis: xcat(['GPT 5.6-Sol', 'Claude Opus-5']), series: [
+    bar('Without BackUpper', [52.5, 45.0], C.gray), bar('With BackUpper', [52.5, 45.0], C.rmbr) ] }),
+  'c-bu-self': () => ({ textStyle: { fontFamily: "'Source Sans 3', sans-serif", color: INK }, animationDuration: 700,
+    tooltip: { trigger: 'item', formatter: p => `${p.name}: <b>${p.value}%</b>` },
+    legend: { bottom: 0, itemWidth: 14, itemHeight: 10, textStyle: { color: INK, fontSize: 14 } },
+    series: [{ type: 'pie', radius: ['42%', '70%'], center: ['50%', '44%'], label: { formatter: '{d}%', fontSize: 14, color: INK }, labelLine: { length: 8, length2: 6 },
+      itemStyle: { borderColor: '#fff', borderWidth: 2 },
+      data: [{ name: 'Tier 1 · rewrite', value: 2.7, itemStyle: { color: C.pass } }, { name: 'Tier 2 · pair', value: 7.9, itemStyle: { color: C.owbr } },
+             { name: 'Tier 3 · snapshot', value: 20.2, itemStyle: { color: C.mint } }, { name: 'Tier 4 · subagent', value: 69.2, itemStyle: { color: C.lav } }] }] }),
 };
 const made = {};
 function draw(id) {
@@ -525,6 +539,8 @@ function resultStep(root, on, chartId) {
 (() => {
   const root = document.getElementById('bu-stage');
   const cmd = document.getElementById('bu-cmd'), out = document.getElementById('bu-out'), log = document.getElementById('bu-log');
+  const hook = document.getElementById('hb-hook'), hstate = document.getElementById('hb-state'), tool = document.getElementById('hb-tool'), tstate = document.getElementById('hb-tstate'), a1 = document.getElementById('hba1'), a2 = document.getElementById('hba2');
+  let hookT = null;
   const nodes = [...root.querySelectorAll('.node[data-n]')], prefNode = root.querySelector('.prefnode'), pref = document.getElementById('bu-pref');
   const CALLS = [
     { name: 'Read-only', cmd: 'Bash(cat notes.txt)', hit: 0, cls: 'pass', r: 'pass ✓',
@@ -554,6 +570,18 @@ function resultStep(root, on, chartId) {
     (i, fresh) => {
       resultStep(root, i === CALLS.length, 'c-bu-main'); if (i === CALLS.length) return;
       const c = CALLS[i];
+      // the hook holds the call, backs up (or not), then releases it to the tool
+      clearTimeout(hookT);
+      const finalHook = () => {
+        hook.className = 'hb hook done'; a2.classList.add('on'); tool.className = 'hb run';
+        hstate.textContent = c.restore ? '↩ restore' : c.log ? '✓ backed up' : '✓ no backup';
+        tstate.textContent = c.restore ? 'state restored' : '▶ original call runs';
+      };
+      a1.classList.add('on');
+      if (fresh) {
+        hook.className = 'hb hook held'; hstate.textContent = '⏸ held'; a2.classList.remove('on'); tool.className = 'hb'; tstate.textContent = 'waiting';
+        hookT = setTimeout(finalHook, 900);
+      } else finalHook();
       cmd.textContent = c.cmd;
       out.innerHTML = `<div class="orow"><b>${c.restore ? 'Found' : 'Matched'}</b><span>${c.out[0]}</span></div><div class="orow"><b>${c.restore ? 'Restore' : 'Runs'}</b><span>${c.out[1]}</span></div>`; out.style.background = c.pref ? 'var(--butter-bg)' : c.restore ? 'var(--mint-bg)' : (c.cls === 'sub' ? 'var(--lav-bg)' : c.cls === 'pass' ? '#F3EEE3' : 'var(--mint-bg)');
       prefNode.className = 'node prefnode' + (c.pref ? ' hit' : ' idle');
