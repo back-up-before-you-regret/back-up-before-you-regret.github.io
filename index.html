@@ -141,6 +141,8 @@
   .hba { text-align: center; color: var(--faint); font-size: 20px; transition: color .25s; } .hba.on { color: var(--accent); }
   .trail { margin-top: 10px; font: 600 13px 'IBM Plex Mono', monospace; color: var(--accent); line-height: 1.6; }
   .trail span { color: var(--muted); font-weight: 400; }
+  .ico { width: 26px; height: auto; display: block; }
+  .tldr i .ico { width: 28px; }
   .callcard { border: 2px solid var(--ink); border-radius: 12px; background: var(--term); color: #EDE6D6; padding: 12px 14px; font: 14px/1.5 "IBM Plex Mono", monospace; box-shadow: 4px 4px 0 var(--ink); }
   .callcard .lbl { font: 700 12px "Source Sans 3", sans-serif; letter-spacing: .08em; color: #BFB6A6; text-transform: uppercase; }
   .callcard .cmd { color: var(--butter); font-weight: 600; word-break: break-word; }
@@ -255,7 +257,7 @@
     <div class="tldr">
       <div><i style="background:var(--coral-bg)">⚠️</i><p><b>Coding agents modify real-world state</b>, such as software environments, databases, and files, and users often regret the loss later, when they find they still need it.</p></div>
       <div><i style="background:var(--butter-bg)">📏</i><p><b>RegretBench</b> grounds 205 tasks in real-world regret moments and tests whether coding agents back up, how often, and whether it covers what humans later need.</p></div>
-      <div><i style="background:var(--mint-bg)">🦀</i><p><b>BackUpper</b> is a plug-in that backs up affected state before every tool call, covering every regret-moment action at $0.014 per task.</p></div>
+      <div><i style="background:var(--mint-bg)"><img src="assets/crab.svg" alt="" class="ico"></i><p><b>BackUpper</b> is a plug-in that backs up affected state before every tool call, covering every regret-moment action at $0.014 per task.</p></div>
     </div>
   </section>
 
@@ -344,7 +346,7 @@
             <div class="node" data-n="3"><span>📸</span><span><span class="k">Tier 3</span> Snapshot</span><span class="r"></span></div>
             <div class="group">everything else</div>
             <div class="node" data-n="4"><span>🔍</span><span>LLM checker: read-only?</span><span class="r"></span></div>
-            <div class="node sub" data-n="5"><span>🦀</span><span><span class="k">Tier 4</span> Backup subagent</span><span class="r"></span></div>
+            <div class="node sub" data-n="5"><span><img src="assets/crab_sub.svg" alt="" class="ico"></span><span><span class="k">Tier 4</span> Backup subagent</span><span class="r"></span></div>
           </div>
         </div>
         <div class="log"><h4>🔒 backup log</h4><ul id="bu-log"></ul></div>
