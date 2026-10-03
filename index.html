@@ -508,7 +508,7 @@ function resultStep(root, on, chartId) {
     ['Collect', 'Extract', 'Build', 'Evaluate', 'Results'],
     ['Start from a <b>real regret moment</b>: someone describes what they lost and could not get back.',
      'Pull out the <b>action</b> that caused the loss, every piece of <b>state</b> it destroyed, and what the user <b>needed</b> back.',
-     'Rebuild it as an <b>executable multi-turn task</b> in a real environment, with the lost state placed outside the harness\'s own backups.',
+     'Incorporate the regret moment into a <b>real-world conversation and environment</b> to build a <b>multi-turn task</b>.',
      'The agent works through the task. The upgrade arrives as one ordinary turn, and the judges check what it did.',
      'Agents finish <b>86.1%</b> of tasks, but back up only <b>17.4%</b> of OOW actions, and just <b>15.2%</b> of regret-moment actions.'],
     (i, fresh) => { resultStep(root, i === 4, 'c-rb-main'); if (i === 4) return; parts.forEach(p => {
