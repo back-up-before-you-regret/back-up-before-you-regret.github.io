@@ -328,7 +328,7 @@
   <section id="backupper" class="band white">
     <div class="eyebrow">02 · Method</div>
     <h2><span class="acc">BackUpper</span>: check every tool call before it runs</h2>
-    <p>Because it is hard to predict which changes will be regretted, BackUpper <b>checks every tool call</b> on the harness's pre-tool-call hook, before it runs. Read-only calls pass straight through. Common operations get a <b>rule-based backup</b>: rewriting the command (<code>rm</code> → move to trash), pairing it with a backup (<code>pip freeze</code> before <code>pip install</code>), or snapshotting workspace edits. Anything else goes to an LLM checker and a <b>lightweight subagent</b> that inspects the call and backs up what it will change. Users can <b>customize</b> what gets backed up in plain words, and every backup is logged with a command to restore it. We measure backup coverage (RMBR, OWBR) and how close the restored state is to the original (<b>state similarity</b>).</p>
+    <p>Because it is hard to predict which changes will be regretted, BackUpper <b>checks every tool call</b> on the harness's pre-tool-call hook, before it runs. Read-only calls pass straight through. Common operations get a <b>rule-based backup</b>: rewriting the command (<code>rm</code> → move to trash), pairing it with a backup (<code>pip freeze</code> before <code>pip install</code>), or snapshotting workspace edits. Complex or ambiguous cases go to an LLM checker and a <b>lightweight subagent</b> that inspects the call and backs up what it will change. Users can <b>customize</b> what gets backed up in plain words, and every backup is logged with a command to restore it. We measure backup coverage (RMBR, OWBR) and how close the restored state is to the original (<b>state similarity</b>).</p>
     <div class="stage" id="bu-stage">
       <div class="canvas">
         <div class="flow">
@@ -344,7 +344,7 @@
             <div class="node" data-n="1"><span>✏️</span><span><span class="k">Tier 1</span> Command rewriting</span><span class="r"></span></div>
             <div class="node" data-n="2"><span>🔗</span><span><span class="k">Tier 2</span> Command pairing</span><span class="r"></span></div>
             <div class="node" data-n="3"><span>📸</span><span><span class="k">Tier 3</span> Snapshot</span><span class="r"></span></div>
-            <div class="group">everything else</div>
+            <div class="group">complex or ambiguous cases</div>
             <div class="node" data-n="4"><span>🔍</span><span>LLM checker: read-only?</span><span class="r"></span></div>
             <div class="node sub" data-n="5"><span><img src="assets/crab_sub.svg" alt="" class="ico"></span><span><span class="k">Tier 4</span> Backup subagent</span><span class="r"></span></div>
           </div>
@@ -389,7 +389,7 @@
     <div class="try">
       <div>
         <p>Install BackUpper once and keep using your agent as usual. Every tool call is checked before it runs, and the state it touches is backed up first.</p>
-        <p>Common operations are handled by rules at no model cost; anything else goes to a lightweight subagent. Every backup is logged with a way to restore it.</p>
+        <p>Common operations are handled by rules at no model cost; complex or ambiguous cases go to a lightweight subagent. Every backup is logged with a way to restore it.</p>
       </div>
       <!-- TODO: confirm the real commands -->
       <div class="term"><div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><pre><span class="p">$</span> npm install -g agents-backupper
@@ -561,7 +561,7 @@ function resultStep(root, on, chartId) {
      '<b>Tier 1</b> rewrites a destructive command into a reversible one.',
      '<b>Tier 2</b> pairs a command with the backup that undoes it.',
      '<b>Tier 3</b> snapshots edits inside the workspace.',
-     'Anything else: an <b>LLM checker</b> spots that it changes state, and a <b>lightweight subagent</b> backs it up.',
+     'Complex or ambiguous cases: an <b>LLM checker</b> spots that it changes state, and a <b>lightweight subagent</b> backs it up.',
      'Specify what you want to back up. In the personalized mode, a <b>preference check</b> runs before every tier.',
      'Every backup is <b>logged with how to restore it</b>, however many actions ago.',
      'Restoring from BackUpper reaches <b>92.2%</b> state similarity, with <b>every action covered</b>, outperforming others.'],
