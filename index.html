@@ -545,7 +545,7 @@ function resultStep(root, on, chartId) {
      '<b>Tier 2</b> pairs a command with the backup that undoes it.',
      '<b>Tier 3</b> snapshots edits inside the workspace.',
      'Anything else: an <b>LLM checker</b> spots that it changes state, and a <b>lightweight subagent</b> backs it up.',
-     'Say what you care about in plain words. In a personalized mode a <b>preference check</b> runs before every tier and only backs up calls that match, saving storage and subagent calls (<b>84.5% F1</b>).',
+     'Specify what you want to back up. In the personalized mode, a <b>preference check</b> runs before every tier.',
      'Every backup is <b>logged with how to restore it</b>, however many actions ago.',
      'Restoring from BackUpper reaches <b>92.2%</b> state similarity to the original, with <b>every action covered</b>, outperforming others.'],
     (i, fresh) => {
