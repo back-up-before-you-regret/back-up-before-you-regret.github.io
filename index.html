@@ -209,6 +209,14 @@
   .try { display: grid; grid-template-columns: 1fr 1.1fr; gap: 26px; align-items: start; }
   .try p { margin: 0 0 14px; }
   pre.bib { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 16px 18px; font: 13.5px/1.7 "IBM Plex Mono", monospace; overflow-x: auto; margin: 0; }
+  /* floating table of contents (wide screens only) */
+  nav.toc { display: flex; flex-direction: column; justify-content: flex-start; align-items: stretch; gap: 2px; }
+  .toc { position: fixed; right: 24px; top: 50%; transform: translateY(-50%); width: 168px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 10px 8px !important; box-shadow: 0 6px 22px rgba(43,43,43,.07); opacity: 0; pointer-events: none; transition: opacity .25s; z-index: 10; }
+  .toc.show { opacity: 1; pointer-events: auto; }
+  .toc a { display: block; padding: 7px 12px; border-radius: 8px; color: var(--muted); font-size: 14.5px; line-height: 1.25; }
+  .toc a:hover { text-decoration: none; background: var(--cream); color: var(--ink); }
+  .toc a.on { background: var(--mint-bg); color: var(--accent); font-weight: 700; }
+  @media (max-width: 1260px) { .toc { display: none; } }
   footer { padding: 26px 0 40px; text-align: center; color: var(--faint); font-size: 14px; }
 
   @media (max-width: 760px) {
@@ -232,7 +240,7 @@
 <div class="wrap">
 
   <!-- 1. title + video -->
-  <section class="band cream" style="padding-top:0">
+  <section id="top" class="band cream" style="padding-top:0">
     <nav>
       <a class="brand" href="#"><img src="assets/badge.png" alt="">RegretBench / BackUpper</a>
       <div class="navlinks">
@@ -426,10 +434,24 @@
 }</pre>
   </section>
 
+  <nav class="toc" id="toc" aria-label="On this page">
+    <a href="#top">Overview</a><a href="#tldr">TL;DR</a><a href="#regretbench">RegretBench</a><a href="#backupper">BackUpper</a><a href="#try">Try it</a><a href="#bibtex">BibTeX</a>
+  </nav>
   <footer>Northeastern University · UC Berkeley · University of Chicago · UIUC</footer>
 </div>
 
 <script>
+// ---------- floating table of contents: appears after the title, highlights the section in view ----------
+(() => {
+  const toc = document.getElementById('toc'), links = [...toc.querySelectorAll('a')];
+  const secs = links.map(a => document.querySelector(a.getAttribute('href')));
+  const update = () => {
+    toc.classList.toggle('show', window.scrollY > 300);
+    let cur = 0; secs.forEach((s, i) => { if (s.getBoundingClientRect().top < window.innerHeight * .6) cur = i; });
+    links.forEach((a, i) => a.classList.toggle('on', i === cur));
+  };
+  window.addEventListener('scroll', update, { passive: true }); update();
+})();
 // ---------- "Try it with your ..." : click a harness to get its install command ----------
 // TODO: confirm the real per-harness install commands
 const INSTALL = {
