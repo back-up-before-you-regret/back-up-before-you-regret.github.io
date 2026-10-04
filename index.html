@@ -160,6 +160,7 @@
   .route { display: grid; gap: 7px; }
   .node { display: grid; grid-template-columns: 26px 1fr auto; align-items: center; gap: 10px; border: 2px solid var(--line); border-radius: 10px; padding: 7px 12px; background: #fff; transition: all .25s; font-size: 15px; }
   .node > span:nth-child(2) { justify-self: start; text-align: left; }
+  .node .hint { font-size: 13px; color: var(--muted); margin-left: 6px; }
   .node .k { font: 700 12.5px "IBM Plex Mono", monospace; color: var(--muted); }
   .node .r { font: 600 13px "IBM Plex Mono", monospace; color: var(--faint); }
   .node.skip { opacity: .55; }
@@ -350,8 +351,8 @@
             <div class="node" data-n="0"><span>👀</span><span>Read-only allowlist</span><span class="r"></span></div>
             <div class="node prefnode"><span>🎯</span><span>Preference check <span class="k">personalized mode</span></span><span class="r"></span></div>
             <div class="group">rules, no model call</div>
-            <div class="node" data-n="1"><span>✏️</span><span><span class="k">Tier 1</span> Command rewriting</span><span class="r"></span></div>
-            <div class="node" data-n="2"><span>🔗</span><span><span class="k">Tier 2</span> Command pairing</span><span class="r"></span></div>
+            <div class="node" data-n="1"><span>✏️</span><span><span class="k">Tier 1</span> Rewrite <span class="hint">replace the call</span></span><span class="r"></span></div>
+            <div class="node" data-n="2"><span>🔗</span><span><span class="k">Tier 2</span> Pair <span class="hint">back up, then run</span></span><span class="r"></span></div>
             <div class="node" data-n="3"><span>📸</span><span><span class="k">Tier 3</span> Snapshot</span><span class="r"></span></div>
             <div class="group">complex or ambiguous cases</div>
             <div class="node" data-n="4"><span>🔍</span><span>LLM checker: read-only?</span><span class="r"></span></div>
@@ -569,9 +570,9 @@ function resultStep(root, on, chartId) {
     { name: 'Read-only', cmd: 'Bash(cat notes.txt)', hit: 0, cls: 'pass', r: 'pass ✓',
       out: ['<span class="mono">cat</span> is on the read-only allowlist', 'run it as is, no backup'] },
     { name: 'Rewrite', cmd: 'Bash(rm data.csv)', hit: 1, r: 'rewrite ✓',
-      out: ['rule <span class="mono">rm &lt;file&gt;</span>', '<span class="mono">mv data.csv .trash/</span> instead'], log: 'data.csv → .trash/' },
+      out: ['rule <span class="mono">rm &lt;file&gt;</span>', '<span class="mono">mv data.csv .trash/</span> instead of <span class="mono">rm</span>'], log: 'data.csv → .trash/' },
     { name: 'Pair', cmd: 'Bash(pip install -U numpy)', hit: 2, r: 'pair ✓',
-      out: ['rule <span class="mono">pip install -U</span>', '<span class="mono">pip freeze &gt; reqs.txt</span>, then upgrade'], log: 'reqs.txt (27 versions)' },
+      out: ['rule <span class="mono">pip install -U</span>', '<span class="mono">pip freeze &gt; reqs.txt</span>, then the original <span class="mono">pip install</span>'], log: 'reqs.txt (27 versions)' },
     { name: 'Snapshot', cmd: 'Edit(src/model.py)', hit: 3, r: 'snapshot ✓',
       out: ['a file edit inside the workspace', 'commit to a shadow git repo, then edit'], log: 'shadow commit 3f2a…' },
     { name: 'Subagent', cmd: 'Bash(./run.sh)', hit: 5, cls: 'sub', r: 'subagent ✓', checker: 'not read-only',
@@ -583,9 +584,9 @@ function resultStep(root, on, chartId) {
   ];
   stepper(root, CALLS.map(c => c.name).concat('Results'),
     ['Every call is checked first. <b>Read-only</b> calls pass with no cost.',
-     '<b>Tier 1</b> rewrites a destructive command into a reversible one.',
-     '<b>Tier 2</b> pairs a command with the backup that undoes it.',
-     '<b>Tier 3</b> snapshots edits inside the workspace.',
+     '<b>Tier 1</b> <b>replaces</b> the call with a reversible version, so the original command never runs.',
+     '<b>Tier 2</b> <b>keeps</b> the call unchanged, but first runs a matching backup command.',
+     '<b>Tier 3</b> snapshots edits inside the workspace or made through native tools.',
      'Complex or ambiguous cases: an <b>LLM checker</b> spots that it changes state, and a <b>lightweight subagent</b> backs it up.',
      'Specify what you want to back up. In the personalized mode, a <b>preference check</b> runs before every tier.',
      'Every backup is <b>logged with how to restore it</b>, however many actions ago.',
@@ -594,7 +595,7 @@ function resultStep(root, on, chartId) {
       resultStep(root, i === CALLS.length, 'c-bu-main'); if (i === CALLS.length) return;
       const c = CALLS[i];
       // the pre-tool-call hook: the call is held, backed up (or not), then the original call runs
-      trail.innerHTML = c.restore ? '↩ restored from the backup log' : `<span>⏸ held at hook</span> → ✓ ${c.log ? 'backed up' : 'no backup needed'} → ✓ original call runs`;
+      trail.innerHTML = c.restore ? '↩ restored from the backup log' : `<span>⏸ held at hook</span> → ✓ ${c.log ? 'backed up' : 'no backup needed'} → ✓ ${c.hit === 1 ? 'rewritten call runs' : 'original call runs'}`;
       cmd.textContent = c.cmd;
       out.innerHTML = `<div class="orow"><b>${c.restore ? 'Found' : 'Matched'}</b><span>${c.out[0]}</span></div><div class="orow"><b>${c.restore ? 'Restore' : 'Runs'}</b><span>${c.out[1]}</span></div>`; out.style.background = c.pref ? 'var(--butter-bg)' : c.restore ? 'var(--mint-bg)' : (c.cls === 'sub' ? 'var(--lav-bg)' : c.cls === 'pass' ? '#F3EEE3' : 'var(--mint-bg)');
       prefNode.className = 'node prefnode' + (c.pref ? ' hit' : ' idle');
