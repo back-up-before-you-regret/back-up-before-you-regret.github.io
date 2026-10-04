@@ -71,8 +71,7 @@
   .tldr p { margin: 4px 0 0; }
 
   /* stage + steps (shared by both demos) */
-  .stage { margin-top: 22px; border: 1px solid var(--line); border-radius: 14px; padding: 22px; background: #fff; }
-  .cream .stage { background: #fff; } .white .stage { background: var(--cream); }
+  .stage { margin-top: 26px; padding: 0; background: none; border: 0; }
 
   .note { margin-top: 14px; font-size: 15.5px; color: var(--ink); min-height: 26px; }
   .note b { color: var(--accent); }
@@ -85,10 +84,12 @@
   .step.on span { border-color: var(--accent); background: var(--accent); }
   .step.cur span { box-shadow: 0 0 0 5px rgba(108,196,161,.35); }
   .step.cur { font-weight: 600; }
-  .ctrl { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
-  .ctrl button { background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 6px 16px; font: 600 14px "IBM Plex Mono", monospace; color: var(--ink); cursor: pointer; }
+  .ctrl { display: flex; justify-content: center; gap: 12px; margin-top: 22px; }
+  .ctrl button { width: 190px; background: #fff; border: 1.5px solid var(--ink); border-radius: 999px; padding: 10px 0; font: 700 15.5px "Source Sans 3", sans-serif; color: var(--ink); cursor: pointer; transition: transform .12s, box-shadow .12s; }
+  .ctrl button:not(:disabled):hover { transform: translateY(-1px); box-shadow: 0 3px 0 var(--ink); }
   .ctrl .next { background: var(--ink); color: #fff; border-color: var(--ink); }
-  .ctrl button:disabled { opacity: .35; cursor: default; }
+  .ctrl button:disabled { opacity: .3; cursor: default; }
+  @media (max-width: 760px) { .ctrl button { width: auto; flex: 1; } }
   .respane h3 { font-size: 21px; margin: 0 0 6px; }
   .respane .cap { font-size: 17px; color: var(--ink); }
   .canvas, .respane { overflow: visible; padding: 0 8px 10px 0; box-sizing: content-box; }
@@ -188,8 +189,9 @@
   .cards div { padding: 2px 12px; text-align: center; }
   .cards div + div { border-left: 1px solid var(--line); }
   .cards.three { grid-template-columns: repeat(3, 1fr); }
+  .cards.wide3 { grid-template-columns: 1fr 1fr 1.7fr; }
   .cards b { display: block; font-size: 30px; color: var(--ink); line-height: 1.15; font-weight: 700; letter-spacing: -.01em; }
-  .cards span { font-size: 14px; color: var(--muted); }
+  .cards span { font-size: 16.5px; color: var(--muted); line-height: 1.35; }
   details.more { margin-top: 14px; border-top: 1px solid var(--line); }
   details.more > summary { cursor: pointer; padding: 12px 0; font-weight: 600; color: var(--accent); list-style: none; }
   details.more > summary::before { content: "▸ "; } details.more[open] > summary::before { content: "▾ "; }
@@ -218,7 +220,7 @@
     .try, .two { grid-template-columns: 1fr; }
     .cards, .cards.three { grid-template-columns: 1fr; gap: 10px; } .cards div + div { border-left: 0; border-top: 1px solid var(--line); padding-top: 10px; }
     .step { font-size: 10.5px; max-width: 70px; }
-    .stage { padding: 14px; }
+    .stage { padding: 0; }
     #rb-stage .canvas, #rb-stage .respane { height: 854px; }
     #bu-stage .canvas, #bu-stage .respane { height: 900px; }
     .stage .note { min-height: 77px !important; }
@@ -321,7 +323,7 @@
     </div>
 
     <div class="result" style="margin-top:16px">
-      <div class="cards three"><div><b>205</b><span>tasks</span></div><div><b>~45</b><span>actions per task</span></div><div><b>5</b><span>tools: shell, SQL, browser, email, DevOps</span></div></div>
+      <div class="cards three wide3"><div><b>205</b><span>tasks</span></div><div><b>~45</b><span>actions per task</span></div><div><b>5</b><span>tools: shell, SQL, browser, email, DevOps</span></div></div>
       <details class="more"><summary>More RegretBench results</summary><div>
         <div class="two">
           <div><p class="sub">Stronger models don't back up more</p><div class="chart sm" id="c-rb-cap"></div><p class="cap">GPT 5.4 → 5.6-Sol in Codex, 60-task subset.</p></div>
@@ -440,6 +442,7 @@ const INSTALL = {
     document.querySelectorAll('.chips button').forEach(x => x.classList.toggle('on', x === b));
     cmd.textContent = '$ ' + INSTALL[b.dataset.h]; box.hidden = false; copy.textContent = 'Copy';
   });
+  document.querySelector('.chips button[data-h=claude]').click();   // default: Claude Code
   copy.onclick = () => { navigator.clipboard.writeText(cmd.textContent.replace(/^\$ /, '')).then(() => { copy.textContent = 'Copied ✓'; }); };
 })();
 // ---------- charts (numbers from the paper) ----------
