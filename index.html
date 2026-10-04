@@ -86,10 +86,10 @@
   .ctrl button:disabled { opacity: .35; cursor: default; }
   .respane h3 { font-size: 21px; margin: 0 0 6px; }
   .respane .cap { font-size: 17px; color: var(--ink); }
-  .canvas, .respane { overflow: hidden; }
+  .canvas, .respane { overflow: visible; padding: 0 8px 10px 0; box-sizing: content-box; }
   @media (min-width: 761px) {
-    #rb-stage .canvas, #rb-stage .respane { height: 428px; }
-    #bu-stage .canvas, #bu-stage .respane { height: 499px; }
+    #rb-stage .canvas, #rb-stage .respane { height: 444px; }
+    #bu-stage .canvas, #bu-stage .respane { height: 512px; }
   }
   #rb-stage .respane .chart { height: 350px; }
   #bu-stage .respane .chart { height: 428px; }
@@ -214,7 +214,7 @@
     .step { font-size: 10.5px; max-width: 70px; }
     .stage { padding: 14px; }
     #rb-stage .canvas, #rb-stage .respane { height: 854px; }
-    #bu-stage .canvas, #bu-stage .respane { height: 856px; }
+    #bu-stage .canvas, #bu-stage .respane { height: 900px; }
     .stage .note { min-height: 77px !important; }
   }
 </style>
