@@ -409,15 +409,15 @@
         <p>Install BackUpper once and keep using your agent as usual. Every tool call is checked before it runs, and the state it touches is backed up first.</p>
         <p>Common operations are handled by rules at no model cost; complex or ambiguous cases go to a lightweight subagent. Every backup is logged with a way to restore it.</p>
       </div>
-      <!-- TODO: confirm the real commands -->
       <div class="term"><div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><pre><span class="p">$</span> npm install -g agents-backupper
+<span class="p">$</span> backupper init
+<span class="p">$</span> backupper install claude-code   <span class="dim"># or codex | hermes</span>
 
-<span class="dim"># use your agent as usual</span>
-<span class="p">$</span> claude
+<span class="dim"># use your agent as usual, then see what was backed up</span>
+<span class="p">$</span> backupper list
 
 <span class="dim"># undo when you regret</span>
-<span class="p">$</span> backupper log
-<span class="p">$</span> backupper restore &lt;id&gt;</pre></div>
+<span class="p">$</span> backupper restore 3</pre></div>
     </div>
   </section>
 
@@ -453,11 +453,10 @@
   window.addEventListener('scroll', update, { passive: true }); update();
 })();
 // ---------- "Try it with your ..." : click a harness to get its install command ----------
-// TODO: confirm the real per-harness install commands
 const INSTALL = {
-  claude: 'npm install -g agents-backupper && backupper install --claude-code',
-  codex:  'npm install -g agents-backupper && backupper install --codex',
-  hermes: 'npm install -g agents-backupper && backupper install --hermes',
+  claude: 'npm install -g agents-backupper && backupper init && backupper install claude-code',
+  codex:  'npm install -g agents-backupper && backupper init && backupper install codex',
+  hermes: 'npm install -g agents-backupper && backupper init && backupper install hermes',
 };
 (() => {
   const box = document.getElementById('install'), cmd = document.getElementById('install-cmd'), copy = document.getElementById('install-copy');
